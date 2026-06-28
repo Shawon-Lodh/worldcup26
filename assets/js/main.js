@@ -3,7 +3,7 @@
    realtime polling (live matches → 15s, otherwise 60s), filter wiring, modal.
 */
 
-import { getT, STRINGS, toBnDigits, toLocalizedDigits } from "./i18n.js";
+import { getT, STRINGS, toBnDigits, toLocalizedDigits } from "./i18n.js?v=6";
 import {
   fetchAll, fetchMatches, matchStatus, fetchMatchesLive, fetchGroupsLive
 } from "./api.js";
@@ -14,7 +14,7 @@ import {
   renderLiveBanner, openMatchModal, closeMatchModal,
   renderMatchSkeletons, renderTeamSkeletons, renderGroupSkeletons, renderStadiumSkeletons,
   renderError, showToast
-} from "./render.js";
+} from "./render.js?v=6";
 
 const LS_LANG = "wc26.lang";
 const LS_THEME = "wc26.theme";
@@ -54,8 +54,11 @@ function applyLang() {
   document.querySelectorAll("[data-i18n-ph]").forEach(el => {
     el.placeholder = t(el.dataset.i18nPh);
   });
-  // lang button label shows the OTHER language to switch to
-  document.querySelector(".lang-btn__label").textContent = t("ref_lang_btn");
+  const langSelect = document.getElementById("langSelect");
+  if (langSelect) {
+    langSelect.value = lang;
+    langSelect.setAttribute("aria-label", t("language_label"));
+  }
 
   if (state.matches.length) paintAll();
 }
@@ -309,8 +312,8 @@ function setTheme(next) {
 
 /* ── Nav / language UI ─────────────────────────────── */
 function wireUI() {
-  document.getElementById("langBtn").addEventListener("click", () =>
-    setLang(lang === "en" ? "bn" : "en"));
+  document.getElementById("langSelect").addEventListener("change", (e) =>
+    setLang(e.target.value === "bn" ? "bn" : "en"));
 
   document.getElementById("themeBtn").addEventListener("click", () =>
     setTheme(document.documentElement.classList.contains("theme-light") ? "dark" : "light"));

@@ -54,10 +54,9 @@
   <meta name="mobile-web-app-capable" content="yes" />
 
   <!-- Performance -->
-  <link rel="preconnect" href="https://worldcup26.ir" crossorigin />
   <link rel="preconnect" href="https://flagcdn.com" crossorigin />
   <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=6" />
 
   <!-- Search Console verification (replace content value with your token)
        Or remove this meta and verify via DNS at your domain registrar. -->
@@ -124,9 +123,13 @@
       </nav>
       <div class="topbar__actions">
         <button id="themeBtn" class="theme-btn" aria-label="Toggle theme">☀️</button>
-        <button id="langBtn" class="btn btn--ghost lang-btn" aria-label="Switch language">
-          <span class="lang-btn__label"></span>
-        </button>
+        <label class="lang-switch" for="langSelect">
+          <span class="sr-only" data-i18n="language_label">Language</span>
+          <select id="langSelect" class="lang-switch__select" aria-label="Language">
+            <option value="en">EN</option>
+            <option value="bn">বাংলা</option>
+          </select>
+        </label>
         <button id="menuBtn" class="btn btn--icon menu-btn" aria-label="Menu" aria-expanded="false">☰</button>
       </div>
     </div>
@@ -243,7 +246,7 @@
   <footer class="footer">
     <div class="container footer__inner">
       <div class="footer__brand">⚽ <span data-i18n="brand">World Cup 2026</span></div>
-      <p class="footer__note" data-i18n="footer_note">Real-time data from worldcup26.ir public API.</p>
+      <p class="footer__note" data-i18n="footer_note">Real-time data from public API.</p>
       <p class="footer__copy">© 2026 · <span data-i18n="footer_rights">All rights reserved</span></p>
     </div>
   </footer>
@@ -257,6 +260,6 @@
     </div>
   </div>
 
-  <script type="module" src="assets/js/main.js"></script>
+  <script type="module" src="assets/js/main.js?v=6"></script>
 </body>
 </html>

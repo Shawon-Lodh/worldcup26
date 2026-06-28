@@ -60,7 +60,7 @@ export const STRINGS = {
     error_load: "Couldn't load data. Please try again.",
     no_matches: "No matches for this filter.",
     live_matches_now: "Live right now:",
-    footer_note: "Real-time data from worldcup26.ir public API.",
+    footer_note: "Real-time data from public API.",
     footer_rights: "All rights reserved",
     tbl_pos: "#", tbl_team: "Team", tbl_mp: "MP", tbl_w: "W", tbl_d: "D", tbl_l: "L",
     tbl_gf: "GF", tbl_ga: "GA", tbl_gd: "GD", tbl_pts: "PTS",
@@ -85,6 +85,7 @@ export const STRINGS = {
     share_match_title: "World Cup 2026 — Match",
     share_copied: "Link copied!",
     share_unsupported: "Sharing not supported on this device.",
+    language_label: "Language",
     weekday_short: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
     month_short: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
   },
@@ -116,7 +117,7 @@ export const STRINGS = {
     error_load: "ডেটা লোড করা যায়নি। আবার চেষ্টা করুন।",
     no_matches: "এই ফিল্টারে কোনো ম্যাচ নেই।",
     live_matches_now: "এখন চলছে:",
-    footer_note: "worldcup26.ir পাবলিক API থেকে রিয়েল-টাইম ডেটা।",
+    footer_note: "পাবলিক API থেকে রিয়েল-টাইম ডেটা।",
     footer_rights: "সর্বস্বত্ব সংরক্ষিত",
     tbl_pos: "#", tbl_team: "দল", tbl_mp: "খেলা", tbl_w: "জয়", tbl_d: "ড্র", tbl_l: "হার",
     tbl_gf: "গৎ", tbl_ga: "খাওয়া", tbl_gd: "পার্থক্য", tbl_pts: "পয়েন্ট",
@@ -141,6 +142,7 @@ export const STRINGS = {
     share_match_title: "বিশ্বকাপ ২০২৬ — ম্যাচ",
     share_copied: "লিংক কপি হয়েছে!",
     share_unsupported: "এই ডিভাইসে শেয়ার সমর্থিত নয়।",
+    language_label: "ভাষা",
     weekday_short: ["রবি","সোম","মঙ্গল","বুধ","বৃহঃ","শুক্র","শনি"],
     month_short: ["জানু","ফেব্রু","মার্চ","এপ্রি","মে","জুন","জুলাই","আগ","সেপ্ট","অক্টো","নভে","ডিসে"],
   }
@@ -158,21 +160,51 @@ export function getT(lang) {
 }
 
 /* API returns local_date as "06/11/2026 13:00" (MM/DD/YYYY HH:mm).
-   We show localized date + time. For Bangla, digits & ordinals translated. */
-export function formatDate(localDate, lang) {
-  if (!localDate) return "";
-  const m = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/.exec(localDate);
-  if (!m) return localDate;
-  const [, mo, dy, yr, hh, mm] = m;
-  const js = new Date(`${yr}-${mo}-${dy}T${hh}:${mm}:00`);
+   The caller passes a Date already converted from venue-local time to the
+   selected viewer timezone. */
+export function formatDateParts(js, lang, timeZoneLabel = "", timeZone = undefined) {
+  if (!(js instanceof Date) || Number.isNaN(js.getTime())) return "";
+  const parts = datePartsInTimeZone(js, timeZone);
+  const mo = parts.month;
+  const dy = parts.day;
+  const yr = parts.year;
+  const hh24 = Number(parts.hour);
+  const hh = String(hh24 % 12 || 12).padStart(2, "0");
+  const mm = parts.minute;
+  const weekday = Number(parts.weekday);
   let txt;
   if (lang === "bn") {
-    txt = `${STRINGS.bn.weekday_short[js.getDay()]}, ${toBnDigits(parseInt(dy,10))} ${STRINGS.bn.month_short[parseInt(mo,10)-1]} ${toBnDigits(yr)}`;
+    txt = `${STRINGS.bn.weekday_short[weekday]}, ${toBnDigits(parseInt(dy,10))} ${STRINGS.bn.month_short[parseInt(mo,10)-1]} ${toBnDigits(yr)}`;
   } else {
-    txt = `${STRINGS.en.weekday_short[js.getDay()]}, ${dy} ${STRINGS.en.month_short[parseInt(mo,10)-1]} ${yr}`;
+    txt = `${STRINGS.en.weekday_short[weekday]}, ${dy} ${STRINGS.en.month_short[parseInt(mo,10)-1]} ${yr}`;
   }
-  const time = lang === "bn" ? `${toBnDigits(hh)}:${toBnDigits(mm)}` : `${hh}:${mm}`;
-  return `${txt} · ${time}`;
+  const meridiem = hh24 < 12 ? "AM" : "PM";
+  const time = lang === "bn" ? `${toBnDigits(hh)}:${toBnDigits(mm)} ${meridiem}` : `${hh}:${mm} ${meridiem}`;
+  return `${txt} · ${time}${timeZoneLabel ? ` ${timeZoneLabel}` : ""}`;
+}
+
+function datePartsInTimeZone(date, timeZone) {
+  const opts = {
+    timeZone,
+    weekday: "short",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  };
+  const dtf = new Intl.DateTimeFormat("en-US", opts);
+  const parts = Object.fromEntries(dtf.formatToParts(date).map(p => [p.type, p.value]));
+  const weekday = STRINGS.en.weekday_short.indexOf(parts.weekday);
+  return {
+    year: parts.year,
+    month: parts.month,
+    day: parts.day,
+    hour: parts.hour,
+    minute: parts.minute,
+    weekday: weekday === -1 ? date.getDay() : weekday,
+  };
 }
 
 export function toLocalizedDigits(s, lang) {

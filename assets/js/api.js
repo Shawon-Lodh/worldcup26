@@ -1,5 +1,5 @@
 /* assets/js/api.js
-   Fetches from the public worldcup26.ir endpoints (no auth required for /get/*).
+   Fetches from the public API endpoints (no auth required for /get/*).
    - small in-memory cache (TTL from server, fallback 20s)
    - graceful failure with last-good data
    - small helper to detect "live" matches

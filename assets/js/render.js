@@ -2,8 +2,9 @@
    Pure rendering functions. Take state + language → DOM strings/elements.
    Kept separate from main.js to keep concerns clear. */
 
-import { getT, formatDate, toLocalizedDigits, toBnDigits, teamNameLocal, stadiumNameLocal } from "./i18n.js";
-import { matchStatus, stageName, parseScorers } from "./api.js";
+import { getT, formatDateParts, toLocalizedDigits, toBnDigits, teamNameLocal, stadiumNameLocal } from "./i18n.js?v=6";
+import { matchStatus, parseScorers } from "./api.js";
+import { formatMatchTime, parseMatchDateToInstant, timeZoneLabel } from "./timezone.js?v=6";
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
@@ -56,6 +57,57 @@ function teamLabel(g, side /* "home" | "away" */, idx) {
 }
 
 /* ── Matches ────────────────────────────────────────────── */
+function renderMatchCard({ g, status }, idx, sIdx, lang, t) {
+  const home = idx.get(String(g.home_team_id));
+  const away = idx.get(String(g.away_team_id));
+  const isTBDHome = String(g.home_team_id) === "0";
+  const isTBDAway = String(g.away_team_id) === "0";
+  const homeLabel = teamLabel(g, "home", idx) || t("tbd");
+  const awayLabel = teamLabel(g, "away", idx) || t("tbd");
+
+  const hs = String(g.home_score), as = String(g.away_score);
+  const scoreShown = status !== "upcoming";
+  const homeWin = scoreShown && !isTBDHome && !isTBDAway && parseInt(hs) > parseInt(as);
+  const awayWin = scoreShown && !isTBDHome && !isTBDAway && parseInt(as) > parseInt(hs);
+
+  const homeFlag = isTBDHome ? "" : teamFlag(home);
+  const awayFlag = isTBDAway ? "" : teamFlag(away);
+
+  const stadium = sIdx.get(String(g.stadium_id));
+  const stadiumName = stadium ? stadiumNameLocal(stadium, lang) : "";
+  const kickoff = formatKickoff(g.local_date, stadium, lang);
+
+  const statusL = status === "live" ? t("status_live_short")
+                : status === "finished" ? `${toLocalizedDigits(hs, lang)}–${toLocalizedDigits(as, lang)} ${t("status_ft")}`
+                : t("status_upcoming_lbl");
+
+  const stageTag = g.type === "group" ? `${t("group_name")} ${g.group}` : stageLabel(g.type, t);
+
+  return `
+    <article class="match ${status === "live" ? "is-live" : ""}" data-mid="${esc(g.id)}" tabindex="0" role="button" aria-label="Match ${esc(g.id)}">
+      <div class="match__top">
+        <span class="match__stage">${esc(stageTag)}</span>
+        <span class="match__status" data-state="${status}">${esc(statusL)}</span>
+      </div>
+      <div class="match__teams">
+        <div class="team-row ${homeWin ? "is-winner" : ""}">
+          ${flagImg(homeFlag, isTBDHome)}
+          <span class="team-row__name">${esc(homeLabel)}</span>
+          <span class="team-row__score ${scoreShown ? "" : "is-pending"}">${scoreShown ? esc(toLocalizedDigits(hs, lang)) : "–"}</span>
+        </div>
+        <div class="team-row ${awayWin ? "is-winner" : ""}">
+          ${flagImg(awayFlag, isTBDAway)}
+          <span class="team-row__name">${esc(awayLabel)}</span>
+          <span class="team-row__score ${scoreShown ? "" : "is-pending"}">${scoreShown ? esc(toLocalizedDigits(as, lang)) : "–"}</span>
+        </div>
+      </div>
+      <div class="match__bottom">
+        <span class="match__date">${esc(kickoff || g.local_date || "")}</span>
+        <span class="match__stadium">${esc(stadiumName)}</span>
+      </div>
+    </article>`;
+}
+
 export function renderMatches(grid, matches, idx, sIdx, lang, filters) {
   const t = getT(lang);
   if (!matches?.length) { grid.innerHTML = `<div class="loading">${esc(t("loading"))}</div>`; return; }
@@ -63,7 +115,7 @@ export function renderMatches(grid, matches, idx, sIdx, lang, filters) {
   // sort: live first, then upcoming by date asc, then finished by date desc
   const withMeta = matches.map(g => ({
     g, status: matchStatus(g),
-    dt: parseMatchDate(g.local_date) || 0
+    dt: parseMatchDate(g.local_date, sIdx.get(String(g.stadium_id))) || 0
   }));
 
   withMeta.sort((a, b) => {
@@ -82,55 +134,34 @@ export function renderMatches(grid, matches, idx, sIdx, lang, filters) {
     return;
   }
 
-  grid.innerHTML = list.map(({ g, status }) => {
-    const home = idx.get(String(g.home_team_id));
-    const away = idx.get(String(g.away_team_id));
-    const isTBDHome = String(g.home_team_id) === "0";
-    const isTBDAway = String(g.away_team_id) === "0";
-    const homeLabel = teamLabel(g, "home", idx) || t("tbd");
-    const awayLabel = teamLabel(g, "away", idx) || t("tbd");
-
-    const hs = String(g.home_score), as = String(g.away_score);
-    const scoreShown = status !== "upcoming";
-    const homeWin = scoreShown && !isTBDHome && !isTBDAway && parseInt(hs) > parseInt(as);
-    const awayWin = scoreShown && !isTBDHome && !isTBDAway && parseInt(as) > parseInt(hs);
-
-    const homeFlag = isTBDHome ? "" : teamFlag(home);
-    const awayFlag = isTBDAway ? "" : teamFlag(away);
-
-    const stadium = sIdx.get(String(g.stadium_id));
-    const stadiumName = stadium ? stadiumNameLocal(stadium, lang) : "";
-
-    const statusL = status === "live" ? t("status_live_short")
-                  : status === "finished" ? `${toLocalizedDigits(hs, lang)}–${toLocalizedDigits(as, lang)} ${t("status_ft")}`
-                  : t("status_upcoming_lbl");
-
-    const stageTag = g.type === "group" ? `${t("group_name")} ${g.group}` : stageName(g.type);
-
-    return `
-      <article class="match ${status === "live" ? "is-live" : ""}" data-mid="${esc(g.id)}" tabindex="0" role="button" aria-label="Match ${esc(g.id)}">
-        <div class="match__top">
-          <span class="match__stage">${esc(stageTag)}</span>
-          <span class="match__status" data-state="${status}">${esc(statusL)}</span>
-        </div>
-        <div class="match__teams">
-          <div class="team-row ${homeWin ? "is-winner" : ""}">
-            ${flagImg(homeFlag, isTBDHome)}
-            <span class="team-row__name">${esc(homeLabel)}</span>
-            <span class="team-row__score ${scoreShown ? "" : "is-pending"}">${scoreShown ? esc(toLocalizedDigits(hs, lang)) : "–"}</span>
+  if (filters.stage === "all") {
+    const stageOrder = ["group", "r32", "r16", "qf", "sf", "third", "final"];
+    const groups = new Map();
+    for (const item of list) {
+      const type = item.g.type;
+      if (!groups.has(type)) groups.set(type, []);
+      groups.get(type).push(item);
+    }
+    const stageRank = (type) => {
+      const idx = stageOrder.indexOf(type);
+      return idx === -1 ? stageOrder.length : idx;
+    };
+    const sortedGroups = [...groups.entries()].sort(
+      (a, b) => stageRank(a[0]) - stageRank(b[0])
+    );
+    const parts = [];
+    for (const [, items] of sortedGroups) {
+      parts.push(`
+        <div class="match-stage-group">
+          <div class="match-stage-grid">
+            ${items.map(item => renderMatchCard(item, idx, sIdx, lang, t)).join("")}
           </div>
-          <div class="team-row ${awayWin ? "is-winner" : ""}">
-            ${flagImg(awayFlag, isTBDAway)}
-            <span class="team-row__name">${esc(awayLabel)}</span>
-            <span class="team-row__score ${scoreShown ? "" : "is-pending"}">${scoreShown ? esc(toLocalizedDigits(as, lang)) : "–"}</span>
-          </div>
-        </div>
-        <div class="match__bottom">
-          <span class="match__date">${esc(formatDate(g.local_date, lang))}</span>
-          <span class="match__stadium">${esc(stadiumName)}</span>
-        </div>
-      </article>`;
-  }).join("");
+        </div>`);
+    }
+    grid.innerHTML = parts.join("");
+  } else {
+    grid.innerHTML = list.map(item => renderMatchCard(item, idx, sIdx, lang, t)).join("");
+  }
 }
 
 function flagImg(flag, isTBD) {
@@ -139,11 +170,19 @@ function flagImg(flag, isTBD) {
   return `<img class="team-row__flag" src="${esc(flag)}" alt="" loading="lazy" onerror="this.classList.add('is-tbd');this.alt='?'"/>`;
 }
 
-function parseMatchDate(local_date) {
-  const m = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/.exec(local_date || "");
-  if (!m) return 0;
-  const [, mo, dy, yr, hh, mm] = m;
-  return new Date(`${yr}-${mo}-${dy}T${hh}:${mm}:00Z`).getTime();
+function parseMatchDate(localDate, stadium) {
+  return parseMatchDateToInstant(localDate, stadium)?.getTime() || 0;
+}
+
+function formatKickoff(localDate, stadium, lang) {
+  const converted = formatMatchTime(localDate, stadium);
+  if (!converted) return "";
+  return formatDateParts(
+    converted.instant,
+    lang,
+    timeZoneLabel(converted.targetTimeZone, lang),
+    converted.targetTimeZone
+  );
 }
 
 /* ── Teams ──────────────────────────────────────────────── */
@@ -280,7 +319,7 @@ export function openMatchModal(modal, body, g, idx, sIdx, lang) {
   const stadium = sIdx.get(String(g.stadium_id));
   const stadiumName = stadium ? stadiumNameLocal(stadium, lang) : t("tbd");
   const status = matchStatus(g);
-  const stageTag = g.type === "group" ? `${t("group_name")} ${g.group}` : stageName(g.type);
+  const stageTag = g.type === "group" ? `${t("group_name")} ${g.group}` : stageLabel(g.type, t);
 
   const homeScore = status === "upcoming" ? "–" : toLocalizedDigits(g.home_score, lang);
   const awayScore = status === "upcoming" ? "–" : toLocalizedDigits(g.away_score, lang);
@@ -304,9 +343,9 @@ export function openMatchModal(modal, body, g, idx, sIdx, lang) {
         <div class="modal__team-name">${esc(awayName)}</div>
       </div>
     </div>
-    <div class="modal__row"><span>${esc(t("kickoff"))}</span><b>${esc(formatDate(g.local_date, lang))}</b></div>
+    <div class="modal__row"><span>${esc(t("kickoff"))}</span><b>${esc(formatKickoff(g.local_date, stadium, lang) || g.local_date || "")}</b></div>
     <div class="modal__row"><span>${esc(t("stadium_lbl"))}</span><b>${esc(stadiumName)}${stadium?.city_en ? ", " + esc(stadium.city_en) : ""}</b></div>
-    <div class="modal__row"><span>${esc(t("stage_lbl"))}</span><b>${esc(stageName(g.type))}${g.group ? " · " + esc(`${t("group_name")} ${g.group}`) : ""}</b></div>
+    <div class="modal__row"><span>${esc(t("stage_lbl"))}</span><b>${esc(stageLabel(g.type, t))}${g.group ? " · " + esc(`${t("group_name")} ${g.group}`) : ""}</b></div>
     <div class="modal__scorers">
       <h4>${esc(t("scorers"))}</h4>
       ${homeScorers.length || awayScorers.length ? `
@@ -320,6 +359,18 @@ export function openMatchModal(modal, body, g, idx, sIdx, lang) {
 export function closeMatchModal(modal) {
   modal.classList.remove("is-open");
   modal.setAttribute("aria-hidden", "true");
+}
+
+function stageLabel(type, t) {
+  return ({
+    group: t("stage_group"),
+    r32: t("stage_r32"),
+    r16: t("stage_r16"),
+    qf: t("stage_qf"),
+    sf: t("stage_sf"),
+    third: t("stage_third"),
+    final: t("stage_final"),
+  })[type] || type;
 }
 
 /* ── Skeletons (shown while data loads) ──────────────── */
@@ -362,4 +413,4 @@ export function showToast(msg) {
   toastEl._t = setTimeout(() => toastEl.classList.remove("is-show"), 2500);
 }
 
-export { getT, toBnDigits, toLocalizedDigits, formatDate };
+export { getT, toBnDigits, toLocalizedDigits, formatDateParts };
