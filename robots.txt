@@ -1,0 +1,15 @@
+# robots.txt for FIFA World Cup 2026 tracker
+# Public, indexable everywhere; sitemap points search engines to our pages.
+
+User-agent: *
+Allow: /
+
+# Block the lightweight JS API cache/proxy paths (none exist, but if added later, disallow):
+Disallow: /api/
+
+# Allow rich-media indexing of flag & OG images
+User-agent: Googlebot-Image
+Allow: /assets/
+
+# Sitemap must be absolute URL. Replace with your final domain.
+Sitemap: https://shawon-lodh.github.io/worldcup26/sitemap.xml
