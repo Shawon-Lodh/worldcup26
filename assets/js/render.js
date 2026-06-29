@@ -388,20 +388,41 @@ function stageLabel(type, t) {
 
 /* ── Skeletons (shown while data loads) ──────────────── */
 export function renderMatchSkeletons(grid) {
-  grid.innerHTML = Array.from({ length: 6 })
-    .map(() => `<div class="skeleton sk-match"></div>`).join("");
+  grid.innerHTML = Array.from({ length: 4 })
+    .map(() => `<div class="skeleton sk-match">
+      <div class="sk-match-row"><div class="sk-match-flag"></div><div class="sk-match-name"></div><div class="sk-match-score"></div></div>
+      <div class="sk-match-row"><div class="sk-match-flag"></div><div class="sk-match-name"></div><div class="sk-match-score"></div></div>
+      <div class="sk-match-meta"></div>
+    </div>`).join("");
 }
 export function renderTeamSkeletons(grid) {
   grid.innerHTML = Array.from({ length: 8 })
-    .map(() => `<div class="skeleton sk-team"></div>`).join("");
+    .map(() => `<div class="skeleton sk-team">
+      <div class="sk-team-flag"></div>
+      <div class="sk-team-name"></div>
+      <div class="sk-team-group"></div>
+    </div>`).join("");
 }
 export function renderGroupSkeletons(grid) {
-  grid.innerHTML = Array.from({ length: 6 })
-    .map(() => `<div class="skeleton sk-group"></div>`).join("");
+  grid.innerHTML = Array.from({ length: 4 })
+    .map(() => `<div class="skeleton sk-group">
+      <div class="sk-group-head"></div>
+      ${Array.from({ length: 4 }).map(() => `<div class="sk-group-row">
+        <div class="sk-group-cell"></div><div class="sk-group-cell"></div>
+        <div class="sk-group-cell"></div><div class="sk-group-cell"></div>
+        <div class="sk-group-cell"></div><div class="sk-group-cell"></div>
+        <div class="sk-group-cell"></div><div class="sk-group-cell"></div>
+        <div class="sk-group-cell"></div><div class="sk-group-cell"></div>
+      </div>`).join("")}
+    </div>`).join("");
 }
 export function renderStadiumSkeletons(grid) {
-  grid.innerHTML = Array.from({ length: 6 })
-    .map(() => `<div class="skeleton sk-stadium"></div>`).join("");
+  grid.innerHTML = Array.from({ length: 4 })
+    .map(() => `<div class="skeleton sk-stadium">
+      <div class="sk-stadium-name"></div>
+      <div class="sk-stadium-city"></div>
+      <div class="sk-stadium-meta"></div>
+    </div>`).join("");
 }
 
 /* ── Error with retry button ─────────────────────────── */

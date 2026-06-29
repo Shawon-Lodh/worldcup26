@@ -218,8 +218,8 @@ async function loadAll() {
   renderTeamSkeletons(document.getElementById("teamsGrid"));
   renderGroupSkeletons(document.getElementById("groupsGrid"));
   renderStadiumSkeletons(document.getElementById("stadiumsGrid"));
-  document.getElementById("bracketGrid").innerHTML = '<div class="skeleton sk-group"></div>';
-  document.getElementById("scorersGrid").innerHTML = '<div class="skeleton sk-group"></div>';
+  document.getElementById("bracketGrid").innerHTML = '<div class="skeleton sk-group"><div class="sk-group-head"></div>' + Array.from({length:4}).map(() => '<div class="sk-group-row">' + Array.from({length:6}).map(() => '<div class="sk-group-cell"></div>').join("") + '</div>').join("") + '</div>';
+  document.getElementById("scorersGrid").innerHTML = '<div class="skeleton sk-group"><div class="sk-group-head"></div>' + Array.from({length:5}).map(() => '<div class="sk-group-row"><div class="sk-group-cell"></div><div class="sk-group-cell"></div><div class="sk-group-cell"></div></div>').join("") + '</div>';
   try {
     const { matches, teams, stadiums, groups } = await fetchAll();
     state.matches = matches;

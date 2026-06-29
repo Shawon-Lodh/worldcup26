@@ -467,10 +467,50 @@ html[lang="bn"] .match__stage { text-transform: none; letter-spacing: 0; }
 /* ── Skeleton shimmer ─────────────────────────────────── */
 .skeleton { background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 37%, var(--surface) 63%); background-size: 400% 100%; animation: shimmer 1.4s infinite linear; border-radius: var(--radius-sm); }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-.sk-match { height: 132px; border: 1px solid var(--border); }
-.sk-team { height: 110px; }
-.sk-group { height: 220px; }
-.sk-stadium { height: 130px; }
+
+.sk-match {
+  height: 132px; border: 1px solid var(--border); padding: 14px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.sk-match::before {
+  content: ""; display: block; height: 14px; width: 40%; border-radius: 6px;
+  background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear;
+}
+.sk-match-row { display: flex; align-items: center; gap: 10px; }
+.sk-match-flag { width: 28px; height: 20px; border-radius: 3px; flex-shrink: 0; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; animation-delay: .1s; }
+.sk-match-name { flex: 1; height: 12px; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; animation-delay: .15s; }
+.sk-match-score { width: 24px; height: 12px; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; animation-delay: .2s; }
+.sk-match-meta { height: 10px; width: 60%; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; animation-delay: .25s; margin-top: auto; }
+
+.sk-team {
+  height: 110px; padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.sk-team-flag { width: 48px; height: 36px; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; }
+.sk-team-name { width: 70%; height: 12px; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; animation-delay: .1s; }
+.sk-team-group { width: 40%; height: 10px; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; animation-delay: .15s; }
+
+.sk-group {
+  height: 240px; padding: 14px; display: flex; flex-direction: column; gap: 6px;
+}
+.sk-group-head { height: 16px; width: 30%; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; margin-bottom: 8px; }
+.sk-group-row { display: flex; gap: 4px; }
+.sk-group-cell { height: 10px; border-radius: 3px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; animation-delay: .1s; }
+.sk-group-cell:nth-child(1) { width: 20px; }
+.sk-group-cell:nth-child(2) { flex: 1; }
+.sk-group-cell:nth-child(n+3) { width: 24px; }
+
+.sk-stadium {
+  height: 130px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
+}
+.sk-stadium-name { height: 14px; width: 65%; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; }
+.sk-stadium-city { height: 10px; width: 45%; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; animation-delay: .1s; }
+.sk-stadium-meta { height: 10px; width: 50%; border-radius: 4px; background: inherit; background-size: inherit; animation: shimmer 1.4s infinite linear; animation-delay: .15s; margin-top: auto; }
+
+/* ── Skeletons grid layout ────────────────────────────── */
+.matches-grid .sk-match { width: 100%; }
+#teamsGrid .sk-team { width: 100%; }
+#groupsGrid .sk-group { width: 100%; }
+#stadiumsGrid .sk-stadium { width: 100%; }
 
 /* ── Error + retry ────────────────────────────────────── */
 .error { text-align: center; color: var(--red); padding: 24px; }
