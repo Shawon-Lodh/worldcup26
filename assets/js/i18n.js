@@ -88,6 +88,46 @@ export const STRINGS = {
     language_label: "Language",
     weekday_short: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
     month_short: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+    // Bracket
+    bracket_title: "Knockout Bracket",
+    bracket_sub: "Road to the Final",
+    nav_bracket: "Bracket",
+    // Team profile
+    team_profile: "Team Profile",
+    team_form: "Recent Form",
+    team_matches: "Matches",
+    team_wins: "W",
+    team_draws: "D",
+    team_losses: "L",
+    team_gf: "GF",
+    team_ga: "GA",
+    team_group: "Group",
+    team_fifa_code: "FIFA",
+    // Top scorers
+    scorers_title: "Top Scorers",
+    scorers_sub: "Golden Boot Race",
+    nav_scorers: "Scorers",
+    scorers_player: "Player",
+    scorers_goals: "Goals",
+    scorers_team: "Team",
+    // Head to head
+    h2h_title: "Head to Head",
+    h2h_select_teams: "Select two teams to compare",
+    h2h_vs: "vs",
+    h2h_no_history: "No previous meetings found.",
+    h2h_form: "Form",
+    h2h_stats: "Stats",
+    h2h_previous: "Previous Meetings",
+    // Match timeline
+    timeline_title: "Match Timeline",
+    timeline_no_events: "No events recorded yet.",
+    timeline_goal: "Goal",
+    // Notifications
+    notif_title: "Goal Alert",
+    notif_enable: "🔔 Enable Goal Alerts",
+    notif_enabled: "🔔 Alerts On",
+    notif_denied: "🔕 Alerts Blocked",
+    notif_test: "Test notification",
   },
   bn: {
     brand: "বিশ্বকাপ ২০২৬",
@@ -145,6 +185,46 @@ export const STRINGS = {
     language_label: "ভাষা",
     weekday_short: ["রবি","সোম","মঙ্গল","বুধ","বৃহঃ","শুক্র","শনি"],
     month_short: ["জানু","ফেব্রু","মার্চ","এপ্রি","মে","জুন","জুলাই","আগ","সেপ্ট","অক্টো","নভে","ডিসে"],
+    // Bracket
+    bracket_title: "নকআউট ব্র্যাকেট",
+    bracket_sub: "ফাইনালের পথ",
+    nav_bracket: "ব্র্যাকেট",
+    // Team profile
+    team_profile: "দলের তথ্য",
+    team_form: "সাম্প্রতিক ফর্ম",
+    team_matches: "ম্যাচসমূহ",
+    team_wins: "জ",
+    team_draws: "ড্র",
+    team_losses: "হা",
+    team_gf: "গস্ব",
+    team_ga: "গবি",
+    team_group: "গ্রুপ",
+    team_fifa_code: "ফিফা কোড",
+    // Top scorers
+    scorers_title: "সর্বোচ্চ গোলদাতা",
+    scorers_sub: "গোল্ডেন বুট রেস",
+    nav_scorers: "গোলদাতা",
+    scorers_player: "খেলোয়াড়",
+    scorers_goals: "গোল",
+    scorers_team: "দল",
+    // Head to head
+    h2h_title: "হেড টু হেড",
+    h2h_select_teams: "তুলনা করতে দুটি দল নির্বাচন করুন",
+    h2h_vs: "বনাম",
+    h2h_no_history: "কোনো পূর্ববর্তী ম্যাচ পাওয়া যায়নি।",
+    h2h_form: "ফর্ম",
+    h2h_stats: "পরিসংখ্যান",
+    h2h_previous: "পূর্ববর্তী ম্যাচ",
+    // Match timeline
+    timeline_title: "ম্যাচ টাইমলাইন",
+    timeline_no_events: "এখনও কোনো ইভেন্ট নেই।",
+    timeline_goal: "গোল",
+    // Notifications
+    notif_title: "গোল অ্যালার্ট",
+    notif_enable: "🔔 গোল অ্যালার্ট চালু করুন",
+    notif_enabled: "🔔 অ্যালার্ট চালু",
+    notif_denied: "🔕 অ্যালার্ট বন্ধ",
+    notif_test: "টেস্ট নোটিফিকেশন",
   }
 };
 

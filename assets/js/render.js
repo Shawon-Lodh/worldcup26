@@ -31,7 +31,7 @@ export function teamName(team, lang) {
 // states — flagcdn requires their GB-XXX subdivision codes instead.
 const FLAG_OVERRIDES = { SCO: "gb-sct", ENG: "gb-eng", WAL: "gb-wls" };
 
-function teamFlag(team) {
+export function teamFlag(team) {
   if (team?.flag) return team.flag;
   const code = team?.fifa_code;
   if (code && FLAG_OVERRIDES[code]) {

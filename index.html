@@ -149,12 +149,15 @@
       </a>
       <nav class="nav" id="nav">
         <a href="#matches" class="nav__link" data-i18n="nav_matches">Matches</a>
+        <a href="#bracket" class="nav__link" data-i18n="nav_bracket">Bracket</a>
         <a href="#teams" class="nav__link" data-i18n="nav_teams">Teams</a>
         <a href="#groups" class="nav__link" data-i18n="nav_groups">Groups</a>
         <a href="#stadiums" class="nav__link" data-i18n="nav_stadiums">Stadiums</a>
+        <a href="#scorers" class="nav__link" data-i18n="nav_scorers">Scorers</a>
       </nav>
       <div class="topbar__actions">
         <button id="themeBtn" class="theme-btn" aria-label="Toggle theme">☀️</button>
+        <button id="notifBtn" class="theme-btn" aria-label="Goal alerts" data-i18n="notif_enable" style="font-size:1rem">🔔</button>
         <label class="lang-switch" for="langSelect">
           <span class="sr-only" data-i18n="language_label">Language</span>
           <select id="langSelect" class="lang-switch__select" aria-label="Language">
@@ -235,6 +238,19 @@
             </div>
           </noscript>
           <div class="loading" data-i18n="loading">Loading matches…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ Bracket ░░ -->
+    <section id="bracket" class="section section--alt">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" data-i18n="bracket_title">Knockout Bracket</h2>
+          <p class="section__sub" data-i18n="bracket_sub">Road to the Final</p>
+        </div>
+        <div class="bracket-grid" id="bracketGrid">
+          <div class="loading" data-i18n="loading">Loading bracket…</div>
         </div>
       </div>
     </section>
@@ -330,6 +346,19 @@
         </div>
       </div>
     </section>
+
+    <!-- ░░ Top Scorers ░░ -->
+    <section id="scorers" class="section">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" data-i18n="scorers_title">Top Scorers</h2>
+          <p class="section__sub" data-i18n="scorers_sub">Golden Boot Race</p>
+        </div>
+        <div class="scorers-grid" id="scorersGrid">
+          <div class="loading" data-i18n="loading">Loading scorers…</div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- ░░ About — SEO content ░░ -->
@@ -360,6 +389,16 @@
     <div class="modal__panel">
       <button class="modal__close" data-close aria-label="Close">✕</button>
       <div id="matchModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ░░ Team Profile Modal ░░ -->
+  <div class="modal" id="teamModal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel modal__panel--wide">
+      <button class="modal__close" data-close aria-label="Close">✕</button>
+      <div id="teamModalBody"></div>
+      <div id="h2hSection" style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border)"></div>
     </div>
   </div>
 

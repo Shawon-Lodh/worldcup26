@@ -17,6 +17,8 @@ import {
 } from "./render.js?v=8";
 import { watchHashSeo, updateSeo } from "./seo.js";
 import { parseMatchDateToInstant } from "./timezone.js";
+import { renderBracket, renderTeamProfile, renderTopScorers, renderH2H, renderTimeline } from "./features.js";
+import { detectChanges, requestPermission, disableNotifications, getNotifyState, resetScores, isNotifySupported } from "./notify.js";
 
 const LS_LANG = "wc26.lang";
 const LS_THEME = "wc26.theme";
@@ -123,16 +125,24 @@ function pad(n) { return toLocalizedDigits(String(n).padStart(2, "0"), lang); }
 /* ── Painting ─────────────────────────────────────────── */
 function paintAll() {
   paintMatches();
+  paintBracket();
   paintTeams();
   paintGroups();
   paintStadiums();
   paintLiveBanner();
+  paintScorers();
 }
 
 function paintMatches() {
   renderMatches(
     document.getElementById("matchesGrid"),
     state.matches, state.teamsIdx, state.stadiumsIdx, lang, filters
+  );
+}
+function paintBracket() {
+  renderBracket(
+    document.getElementById("bracketGrid"),
+    state.matches, state.teamsIdx, lang
   );
 }
 function paintTeams() {
@@ -150,6 +160,12 @@ function paintLiveBanner() {
   const live = state.matches.some(m => matchStatus(m) === "live");
   document.getElementById("livePulse").classList.toggle("is-hidden", !live);
 }
+function paintScorers() {
+  renderTopScorers(
+    document.getElementById("scorersGrid"),
+    state.matches, state.teamsIdx, lang
+  );
+}
 
 /* ── Data fetch with realtime polling ────────────────── */
 async function loadAll() {
@@ -159,6 +175,8 @@ async function loadAll() {
   renderTeamSkeletons(document.getElementById("teamsGrid"));
   renderGroupSkeletons(document.getElementById("groupsGrid"));
   renderStadiumSkeletons(document.getElementById("stadiumsGrid"));
+  document.getElementById("bracketGrid").innerHTML = '<div class="skeleton sk-group"></div>';
+  document.getElementById("scorersGrid").innerHTML = '<div class="skeleton sk-group"></div>';
   try {
     const { matches, teams, stadiums, groups } = await fetchAll();
     state.matches = matches;
@@ -175,6 +193,8 @@ async function loadAll() {
     renderError(document.getElementById("teamsGrid"), lang, loadAll);
     renderError(document.getElementById("groupsGrid"), lang, loadAll);
     renderError(document.getElementById("stadiumsGrid"), lang, loadAll);
+    renderError(document.getElementById("bracketGrid"), lang, loadAll);
+    renderError(document.getElementById("scorersGrid"), lang, loadAll);
   }
 }
 
@@ -188,8 +208,11 @@ async function pollLive() {
     state.groups = groups;
     if (!filterManual) autoSelectFilters();
     paintMatches();
+    paintBracket();
     paintGroups();
     paintLiveBanner();
+    paintScorers();
+    detectChanges(matches, state.teamsIdx, lang);
   } catch (e) {
     console.warn("poll failed", e);
   } finally {
@@ -283,7 +306,7 @@ function wireFilters() {
   });
 }
 
-/* ── Team search ──────────────────────────────────────── */
+/* ── Team search + profile ─────────────────────────────── */
 function wireTeamSearch() {
   let tId = null;
   const input = document.getElementById("teamSearch");
@@ -294,6 +317,66 @@ function wireTeamSearch() {
       if (v.length) track("team_search", { query_length: v.length });
       paintTeams();
     }, 120);
+  });
+}
+
+function wireTeamProfile() {
+  const grid = document.getElementById("teamsGrid");
+  grid.addEventListener("click", (e) => {
+    const card = e.target.closest(".team-card");
+    if (!card) return;
+    const idx = [...grid.children].indexOf(card);
+    const sorted = [...state.teams].sort((a, b) => (teamNameLocal(a, lang)).localeCompare(teamNameLocal(b, lang)));
+    const q = document.getElementById("teamSearch").value.trim().toLowerCase();
+    let list = sorted;
+    if (q) {
+      list = list.filter(x => (x.name_en || "").toLowerCase().includes(q)
+        || (teamNameLocal(x, lang)).toLowerCase().includes(q)
+        || (x.fifa_code || "").toLowerCase().includes(q));
+    }
+    const team = list[idx];
+    if (!team) return;
+    openTeamProfile(team);
+  });
+}
+
+function wireBracket() {
+  const grid = document.getElementById("bracketGrid");
+  grid.addEventListener("click", (e) => {
+    const match = e.target.closest(".bracket__match");
+    if (!match) return;
+    const mid = match.dataset.mid;
+    if (mid) openMatch(mid);
+  });
+  grid.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const match = e.target.closest(".bracket__match");
+    if (!match) return;
+    match.click();
+  });
+}
+
+function wireNotifications() {
+  const btn = document.getElementById("notifBtn");
+  if (!btn) return;
+  const updateBtn = () => {
+    const state = getNotifyState();
+    const t = getT(lang);
+    if (state === "unsupported") { btn.style.display = "none"; return; }
+    if (state === "enabled") btn.textContent = "🔔";
+    else if (state === "denied") btn.textContent = "🔕";
+    else btn.textContent = "🔔";
+    btn.title = state === "enabled" ? t("notif_enabled") : state === "denied" ? t("notif_denied") : t("notif_enable");
+  };
+  updateBtn();
+  btn.addEventListener("click", async () => {
+    if (getNotifyState() === "enabled") {
+      disableNotifications();
+    } else {
+      const ok = await requestPermission();
+      if (!ok && getNotifyState() === "denied") showToast(getT(lang)("notif_denied"));
+    }
+    updateBtn();
   });
 }
 
@@ -317,6 +400,14 @@ function openMatch(mid) {
   document.title = `${hn} vs ${an} — World Cup 2026 Match ${g.id}`;
   setMatchCanonical(g.id);
   injectMatchSchema(g, hn, an);
+  // Add timeline below scorers
+  const scorerHost = document.getElementById("matchModalBody");
+  if (scorerHost) {
+    const tlDiv = document.createElement("div");
+    tlDiv.id = "matchTimeline";
+    scorerHost.appendChild(tlDiv);
+    renderTimeline(tlDiv, g, state.teamsIdx, lang);
+  }
 }
 
 function setMatchCanonical(mid) {
@@ -353,6 +444,76 @@ function closeModal() {
   u.searchParams.delete("match");
   history.replaceState(null, "", u);
   updateSeo(lang);
+}
+
+/* ── Team Profile Modal ────────────────────────────────── */
+let teamProfileRef = null;
+
+function openTeamProfile(team) {
+  const modal = document.getElementById("teamModal");
+  const body = document.getElementById("teamModalBody");
+  const h2hHost = document.getElementById("h2hSection");
+  teamProfileRef = team;
+  renderTeamProfile(body, team, state.matches, state.stadiumsIdx, state.teamsIdx, lang);
+  // Add timeline to match modal if open
+  renderH2H(h2hHost, team, null, state.matches, state.stadiumsIdx, lang);
+  addH2HSelector(h2hHost, team);
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+  track("team_open", { id: team.id, name: team.name_en || "" });
+}
+
+function addH2HSelector(host, team1) {
+  const t = getT(lang);
+  // Remove existing selector if any
+  const existing = host.querySelector(".h2h-selector");
+  if (existing) existing.remove();
+
+  const selDiv = document.createElement("div");
+  selDiv.className = "h2h-selector";
+  selDiv.style.cssText = "margin-top:16px";
+  selDiv.innerHTML = `
+    <label style="font-size:.78rem;color:var(--text-3)">${escAttr(t("h2h_title"))}: ${escAttr(t("h2h_select_teams"))}</label>
+    <select id="h2hTeamSelect" style="margin-left:8px;padding:4px 8px;background:var(--bg-3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:.82rem">
+      <option value="">-- ${escAttr(t("h2h_select_teams"))} --</option>
+      ${state.teams.filter(x => String(x.id) !== String(team1.id)).map(x =>
+        `<option value="${escAttr(x.id)}">${escAttr(teamNameLocal(x, lang))}</option>`
+      ).join("")}
+    </select>`;
+  host.appendChild(selDiv);
+
+  selDiv.querySelector("select").addEventListener("change", (e) => {
+    const team2 = state.teams.find(x => String(x.id) === e.target.value);
+    const h2hHost = document.getElementById("h2hSection");
+    renderH2H(h2hHost, team1, team2 || null, state.matches, state.stadiumsIdx, lang);
+  });
+}
+
+function escAttr(s) { return String(s).replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;"); }
+
+function closeTeamModal() {
+  const modal = document.getElementById("teamModal");
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+  teamProfileRef = null;
+}
+
+function wireTeamModal() {
+  const teamModal = document.getElementById("teamModal");
+  teamModal.addEventListener("click", (e) => {
+    if (e.target.matches("[data-close]")) closeTeamModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && teamModal.classList.contains("is-open")) closeTeamModal();
+  });
+  // Match click inside team profile → open match modal
+  const teamBody = document.getElementById("teamModalBody");
+  teamBody.addEventListener("click", (e) => {
+    const m = e.target.closest(".tp-match");
+    if (!m) return;
+    const mid = m.dataset.mid;
+    if (mid) openMatch(mid);
+  });
 }
 
 function wireModal() {
@@ -470,7 +631,11 @@ function boot() {
   wireUI();
   wireFilters();
   wireTeamSearch();
+  wireTeamProfile();
+  wireBracket();
+  wireNotifications();
   wireModal();
+  wireTeamModal();
   wireSectionTracking();
   applyLang();
   watchHashSeo(lang);
