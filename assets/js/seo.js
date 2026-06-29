@@ -59,7 +59,7 @@ const HOME_SEO = {
   }
 };
 
-const ROUTES = ["matches", "teams", "groups", "stadiums"];
+const ROUTES = ["matches", "bracket", "teams", "groups", "stadiums", "scorers"];
 
 function getCurrentSection() {
   const hash = (window.location.hash || "").replace("#", "").split("?")[0];

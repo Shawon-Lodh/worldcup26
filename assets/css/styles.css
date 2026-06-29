@@ -127,6 +127,7 @@ html.theme-light .topbar {
   transition: color .15s, background .15s;
 }
 .nav__link:hover { color: var(--text); background: rgba(255,255,255,.05); }
+.nav__link--sub { opacity: .6; font-size: .82rem; }
 html.theme-light .nav__link:hover { background: rgba(15, 118, 110, .08); }
 .topbar__actions { margin-inline-start: auto; display: flex; align-items: center; gap: 8px; }
 .lang-switch {
