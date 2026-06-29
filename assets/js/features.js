@@ -196,7 +196,8 @@ function stageLabel(type, t) {
 }
 
 function barPct(a, b) { const max = Math.max(a, b, 1); return Math.round((a / max) * 80); }
-  const converted = formatMatchTime(localDate, stadium);
+
+function formatKickoffLocal(localDate, stadium, lang) {
   if (!converted || !converted.instant) return localDate || "";
   return formatDateParts(converted.instant, lang,
     timeZoneLabel(converted.targetTimeZone, lang), converted.targetTimeZone);
