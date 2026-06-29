@@ -233,7 +233,7 @@ export function renderTopScorers(grid, matches, idx, lang) {
     if (p) p.hattricks = (p.hattricks || 0) + 1;
   }
 
-  const players = [...playerMap.values()].sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name));
+  const players = [...playerMap.values()].sort((a, b) => b.goals - a.goals || (b.hattricks || 0) - (a.hattricks || 0) || a.name.localeCompare(b.name));
   if (!players.length) {
     grid.innerHTML = `<div class="loading">${esc(t("no_scorers"))}</div>`;
     return;
