@@ -32,11 +32,8 @@ export function renderBracket(grid, matches, idx, lang) {
   for (const stage of stageOrder) {
     let games = byStage[stage] || [];
     if (!games.length) continue;
-    // Sort by date/time
-    games = [...games].sort((a, b) => {
-      return (parseMatchDateToInstant(a.local_date, null)?.getTime() || 0) -
-             (parseMatchDateToInstant(b.local_date, null)?.getTime() || 0);
-    });
+    // Sort by match ID (bracket seeding order)
+    games = [...games].sort((a, b) => parseInt(a.id) - parseInt(b.id));
     html += `<div class="bracket__round"><div class="bracket__round-label">${esc(stageLabels[stage])}</div>`;
     html += '<div class="bracket__matches">';
     for (const g of games) {
