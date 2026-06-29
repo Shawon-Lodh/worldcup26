@@ -29,7 +29,7 @@ export const SITE = {
   // ── Search Console verification token (HTML-tag method) ─
   // Paste only the content value (e.g. "AbCd123…"). Also set the meta tag in
   // index.html directly with the same value. Empty = not verified yet.
-  googleVerification: "",
+  googleVerification: "fX9WxSy3emi-8nf_U-zmf0Hlfic_TPFxzqS1rGSYq4E",
 
   // Twitter handle (e.g. "@yourname") — optional, improves Twitter cards.
   twitterHandle: "",
