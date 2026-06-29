@@ -5,13 +5,13 @@
    - Images: cache-first with fallback to flag placeholder.
 */
 
-const VERSION = "wc26-v7";
+const VERSION = "wc26-v8";
 const SHELL = [
   "./",
   "./index.html",
   "./404.html",
   "./assets/css/styles.css?v=6",
-  "./assets/js/main.js?v=7",
+  "./assets/js/main.js?v=8",
   "./assets/js/i18n.js?v=6",
   "./assets/js/api.js",
   "./assets/js/render.js?v=7",

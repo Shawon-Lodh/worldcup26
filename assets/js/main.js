@@ -14,7 +14,7 @@ import {
   renderLiveBanner, openMatchModal, closeMatchModal,
   renderMatchSkeletons, renderTeamSkeletons, renderGroupSkeletons, renderStadiumSkeletons,
   renderError, showToast
-} from "./render.js?v=7";
+} from "./render.js?v=8";
 import { watchHashSeo, updateSeo } from "./seo.js";
 import { parseMatchDateToInstant } from "./timezone.js";
 
