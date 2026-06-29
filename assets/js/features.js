@@ -30,8 +30,13 @@ export function renderBracket(grid, matches, idx, lang) {
 
   let html = '<div class="bracket">';
   for (const stage of stageOrder) {
-    const games = byStage[stage] || [];
+    let games = byStage[stage] || [];
     if (!games.length) continue;
+    // Sort by date/time
+    games = [...games].sort((a, b) => {
+      return (parseMatchDateToInstant(a.local_date, null)?.getTime() || 0) -
+             (parseMatchDateToInstant(b.local_date, null)?.getTime() || 0);
+    });
     html += `<div class="bracket__round"><div class="bracket__round-label">${esc(stageLabels[stage])}</div>`;
     html += '<div class="bracket__matches">';
     for (const g of games) {
