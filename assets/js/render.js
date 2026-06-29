@@ -4,7 +4,7 @@
 
 import { getT, formatDateParts, toLocalizedDigits, toBnDigits, teamNameLocal, stadiumNameLocal } from "./i18n.js?v=6";
 import { matchStatus, parseScorers } from "./api.js";
-import { formatMatchTime, parseMatchDateToInstant, timeZoneLabel } from "./timezone.js?v=6";
+import { formatMatchTime, parseMatchDateToInstant, timeZoneLabel } from "./timezone.js?v=7";
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
