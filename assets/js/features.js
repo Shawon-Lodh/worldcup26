@@ -217,18 +217,10 @@ export function renderTopScorers(grid, matches, idx, lang) {
     const awayFlag = away ? teamFlag(away) : "";
 
     for (const scorer of parseScorers(m.home_scorers)) {
-      const name = scorer.replace(/\s+\d+.*$/, "").trim();
-      if (!name) continue;
-      const key = name.toLowerCase();
-      if (!playerMap.has(key)) playerMap.set(key, { name, goals: 0, team: homeName, flag: homeFlag });
-      playerMap.get(key).goals++;
+      addScorer(playerMap, scorer, homeName, homeFlag);
     }
     for (const scorer of parseScorers(m.away_scorers)) {
-      const name = scorer.replace(/\s+\d+.*$/, "").trim();
-      if (!name) continue;
-      const key = name.toLowerCase();
-      if (!playerMap.has(key)) playerMap.set(key, { name, goals: 0, team: awayName, flag: awayFlag });
-      playerMap.get(key).goals++;
+      addScorer(playerMap, scorer, awayName, awayFlag);
     }
   }
 
@@ -260,6 +252,33 @@ export function renderTopScorers(grid, matches, idx, lang) {
           <td class="pts"><b>${esc(toLocalizedDigits(p.goals, lang))}</b></td>
         </tr>`).join("")}</tbody>
     </table>`;
+}
+
+function normalizeLast(s) {
+  return s.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\./g, "")
+    .trim();
+}
+
+function lastName(s) {
+  const words = s.split(/\s+/).filter(w => w.length > 0);
+  return words[words.length - 1] || "";
+}
+
+function addScorer(playerMap, raw, team, flag) {
+  const name = raw.replace(/\s+\d+.*$/, "").trim();
+  if (!name) return;
+  const lnKey = normalizeLast(lastName(name));
+  for (const [key, p] of playerMap) {
+    if (normalizeLast(lastName(p.name)) === lnKey) {
+      p.goals++;
+      if (name.length > p.name.length) p.name = name;
+      if (!p.flag && flag) p.flag = flag;
+      return;
+    }
+  }
+  playerMap.set(lnKey, { name, goals: 1, team, flag });
 }
 
 /* ── 4. Head to Head ──────────────────────────────────── */
