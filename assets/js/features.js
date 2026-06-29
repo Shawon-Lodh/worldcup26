@@ -240,7 +240,7 @@ export function renderTopScorers(grid, matches, idx, lang) {
 
   // Show top 10, but include ties at the cutoff
   const top = [];
-  const maxShow = 10;
+  const maxShow = 5;
   for (let i = 0; i < players.length; i++) {
     if (i < maxShow) { top.push(players[i]); continue; }
     if (players[i].goals === players[maxShow - 1].goals) top.push(players[i]);
