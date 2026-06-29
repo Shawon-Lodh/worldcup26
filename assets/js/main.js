@@ -14,7 +14,9 @@ import {
   renderLiveBanner, openMatchModal, closeMatchModal,
   renderMatchSkeletons, renderTeamSkeletons, renderGroupSkeletons, renderStadiumSkeletons,
   renderError, showToast
-} from "./render.js?v=6";
+} from "./render.js?v=7";
+import { watchHashSeo, updateSeo } from "./seo.js";
+import { parseMatchDateToInstant } from "./timezone.js";
 
 const LS_LANG = "wc26.lang";
 const LS_THEME = "wc26.theme";
@@ -61,6 +63,7 @@ function applyLang() {
   }
 
   if (state.matches.length) paintAll();
+  updateSeo(lang);
 }
 
 function setLang(next, pushToUrl = true) {
@@ -233,6 +236,68 @@ function wireTeamSearch() {
 }
 
 /* ── Modal ────────────────────────────────────────────── */
+function openMatch(mid) {
+  const modal = document.getElementById("matchModal");
+  const body = document.getElementById("matchModalBody");
+  const g = state.matches.find(x => String(x.id) === String(mid));
+  if (!g) return;
+  openMatchModal(modal, body, g, state.teamsIdx, state.stadiumsIdx, lang);
+  rememberShareTarget(g);
+  track("match_open", { id: g.id, stage: g.type, status: matchStatus(g) });
+  // Update URL to be shareable + indexed
+  const home = state.teamsIdx.get(String(g.home_team_id));
+  const away = state.teamsIdx.get(String(g.away_team_id));
+  const hn = home?.name_en || g.home_team_label || "TBD";
+  const an = away?.name_en || g.away_team_label || "TBD";
+  const u = new URL(location.href);
+  u.searchParams.set("match", g.id);
+  history.replaceState(null, "", u);
+  document.title = `${hn} vs ${an} — World Cup 2026 Match ${g.id}`;
+  setMatchCanonical(g.id);
+  injectMatchSchema(g, hn, an);
+}
+
+function setMatchCanonical(mid) {
+  const el = document.querySelector("link[rel='canonical']");
+  if (el) el.setAttribute("href", `${FINAL_HOST}?match=${mid}`);
+}
+
+function injectMatchSchema(g, hn, an) {
+  const id = `ld-match-${g.id}`;
+  let el = document.getElementById(id);
+  if (el) el.remove();
+  el = document.createElement("script");
+  el.type = "application/ld+json";
+  el.id = id;
+  const instant = parseMatchDateToInstant(g.local_date, state.stadiumsIdx.get(String(g.stadium_id)));
+  const kickoff = instant ? instant.toISOString() : null;
+  el.textContent = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    "name": `${hn} vs ${an}`,
+    "sport": "Soccer",
+    "startDate": kickoff,
+    "homeTeam": { "@type": "SportsTeam", "name": hn },
+    "awayTeam": { "@type": "SportsTeam", "name": an },
+    "location": { "@type": "Place", "name": g.stadium_id ? state.stadiumsIdx.get(String(g.stadium_id))?.name_en || "" : "" }
+  });
+  document.head.appendChild(el);
+}
+
+function closeModal() {
+  const modal = document.getElementById("matchModal");
+  closeMatchModal(modal);
+  const u = new URL(location.href);
+  u.searchParams.delete("match");
+  history.replaceState(null, "", u);
+  updateSeo(lang);
+}
+
+function setMatchCanonical(mid) {
+  const el = document.querySelector("link[rel='canonical']");
+  if (el) el.setAttribute("href", `${FINAL_HOST}?match=${mid}`);
+}
+
 function wireModal() {
   const modal = document.getElementById("matchModal");
   const body = document.getElementById("matchModalBody");
@@ -240,12 +305,7 @@ function wireModal() {
   document.getElementById("matchesGrid").addEventListener("click", (e) => {
     const card = e.target.closest(".match");
     if (!card) return;
-    const mid = card.dataset.mid;
-    const g = state.matches.find(x => String(x.id) === String(mid));
-    if (!g) return;
-    openMatchModal(modal, body, g, state.teamsIdx, state.stadiumsIdx, lang);
-    rememberShareTarget(g);
-    track("match_open", { id: g.id, stage: g.type, status: matchStatus(g) });
+    openMatch(card.dataset.mid);
   });
   document.getElementById("matchesGrid").addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
@@ -255,12 +315,11 @@ function wireModal() {
   });
 
   modal.addEventListener("click", (e) => {
-    if (e.target.matches("[data-close]")) closeMatchModal(modal);
-    // Share button — uses Web Share API where available, falls back to clipboard.
+    if (e.target.matches("[data-close]")) closeModal();
     if (e.target.closest("#modalShareBtn")) shareCurrentMatch();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMatchModal(modal);
+    if (e.key === "Escape") closeModal();
   });
 }
 
@@ -357,6 +416,7 @@ function boot() {
   wireModal();
   wireSectionTracking();
   applyLang();
+  watchHashSeo(lang);
   applyTheme(detectTheme());
   tickCountdown();
   setInterval(tickCountdown, 1000);
@@ -367,7 +427,19 @@ function boot() {
       navigator.serviceWorker.register("sw.js").catch(() => {});
     });
   }
-  loadAll().then(schedulePoll);
+  loadAll().then(() => {
+    schedulePoll();
+    // Deep-link: open specific match if ?match=X in URL
+    const matchId = new URLSearchParams(location.search).get("match");
+    if (matchId) {
+      // Scroll to matches section first
+      requestAnimationFrame(() => {
+        const el = document.getElementById("matches");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+        setTimeout(() => openMatch(matchId), 400);
+      });
+    }
+  });
 }
 
 if (document.readyState === "loading") {
