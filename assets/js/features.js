@@ -213,12 +213,21 @@ export function renderTopScorers(grid, matches, idx, lang) {
     return;
   }
 
+  // Show top 10, but include ties at the cutoff
+  const top = [];
+  const maxShow = 10;
+  for (let i = 0; i < players.length; i++) {
+    if (i < maxShow) { top.push(players[i]); continue; }
+    if (players[i].goals === players[maxShow - 1].goals) top.push(players[i]);
+    else break;
+  }
+
   grid.innerHTML = `
     <table class="table scorers-table">
       <thead><tr>
         <th>#</th><th>${esc(t("scorers_player"))}</th><th>${esc(t("scorers_team"))}</th><th>${esc(t("scorers_goals"))}</th>
       </tr></thead>
-      <tbody>${players.map((p, i) => `
+      <tbody>${top.map((p, i) => `
         <tr class="${i < 3 ? "sc-top" + (i + 1) : ""}">
           <td class="sc-rank">${i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : toLocalizedDigits(i + 1, lang)}</td>
           <td><b>${esc(p.name)}</b></td>

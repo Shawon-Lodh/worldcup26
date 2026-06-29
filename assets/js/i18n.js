@@ -105,7 +105,7 @@ export const STRINGS = {
     team_fifa_code: "FIFA",
     // Top scorers
     scorers_title: "Top Scorers",
-    scorers_sub: "Golden Boot Race",
+    scorers_sub: "Golden Boot Race · live updated",
     nav_scorers: "Scorers",
     scorers_player: "Player",
     scorers_goals: "Goals",
@@ -202,7 +202,7 @@ export const STRINGS = {
     team_fifa_code: "ফিফা কোড",
     // Top scorers
     scorers_title: "সর্বোচ্চ গোলদাতা",
-    scorers_sub: "গোল্ডেন বুট রেস",
+    scorers_sub: "গোল্ডেন বুট রেস · লাইভ",
     nav_scorers: "গোলদাতা",
     scorers_player: "খেলোয়াড়",
     scorers_goals: "গোল",
