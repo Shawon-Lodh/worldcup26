@@ -195,7 +195,7 @@ function stageLabel(type, t) {
     qf: t("stage_qf"), sf: t("stage_sf"), third: t("stage_third"), final: t("stage_final") })[type] || type;
 }
 
-function formatKickoffLocal(localDate, stadium, lang) {
+function barPct(a, b) { const max = Math.max(a, b, 1); return Math.round((a / max) * 80); }
   const converted = formatMatchTime(localDate, stadium);
   if (!converted || !converted.instant) return localDate || "";
   return formatDateParts(converted.instant, lang,
@@ -341,6 +341,10 @@ export function renderH2H(host, team1, team2, matches, sIdx, lang) {
         <div class="h2h__stat"><b>${w1}</b> ${esc(t("team_wins"))}</div>
         <div class="h2h__stat"><b>${dr}</b> ${esc(t("team_draws"))}</div>
         <div class="h2h__stat"><b>${w2}</b> ${esc(t("team_wins"))}</div>
+      </div>
+      <div class="h2h__charts">
+        <div class="h2h__chart-row"><span>${esc(name1)}</span><b>${gf1}</b><div class="h2h__bar h2h__bar--1" style="width:${barPct(gf1,gf2)}%"></div></div>
+        <div class="h2h__chart-row"><span>${esc(name2)}</span><b>${gf2}</b><div class="h2h__bar h2h__bar--2" style="width:${barPct(gf2,gf1)}%"></div></div>
       </div>
       ${h2hMatches.length ? `<h3>${esc(t("h2h_previous"))}</h3>
       <div class="h2h__matches">

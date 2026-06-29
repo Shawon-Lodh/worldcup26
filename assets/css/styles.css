@@ -606,3 +606,138 @@ html[lang="bn"] .match__stage { text-transform: none; letter-spacing: 0; }
 .date-group { margin-bottom: 20px; }
 .date-group__header { font-size: .85rem; font-weight: 700; color: var(--accent); padding: 8px 0; border-bottom: 1px solid var(--border); margin-bottom: 10px; display: flex; align-items: baseline; gap: 8px; }
 .date-group__header span { font-size: .72rem; color: var(--text-3); font-weight: 400; }
+
+/* ════════════════════════════════════════════════════════
+   1. Color-coded Stage Tags & Borders
+   ════════════════════════════════════════════════════════ */
+.match[data-stage="group"] { border-left: 3px solid var(--accent-3); }
+.match[data-stage="r32"]  { border-left: 3px solid var(--green); }
+.match[data-stage="r16"]  { border-left: 3px solid #f0c040; }
+.match[data-stage="qf"]   { border-left: 3px solid #ff8c42; }
+.match[data-stage="sf"]   { border-left: 3px solid var(--red); }
+.match[data-stage="third"] { border-left: 3px solid #b39ddb; }
+.match[data-stage="final"] { border-left: 3px solid var(--accent); }
+
+/* ════════════════════════════════════════════════════════
+   2. Animated Score Pulse
+   ════════════════════════════════════════════════════════ */
+@keyframes scorePulse { 0%{transform:scale(1)} 50%{transform:scale(1.35);color:var(--accent)} 100%{transform:scale(1)} }
+.score-pulse { animation: scorePulse .5s ease; }
+.team-row__score { transition: transform .2s, color .2s; }
+
+/* ════════════════════════════════════════════════════════
+   3. Card Depth / Glow Variants
+   ════════════════════════════════════════════════════════ */
+@keyframes liveGlow { 0%,100%{box-shadow: 0 0 8px rgba(255,46,99,.15)} 50%{box-shadow: 0 0 18px rgba(255,46,99,.35)} }
+.match.is-live { animation: liveGlow 2s ease-in-out infinite; border-left-color: var(--accent-2) !important; }
+.match[data-state="finished"] { opacity: .75; }
+.match[data-state="upcoming"] { border-left-color: rgba(0,210,255,.3) !important; }
+
+/* ════════════════════════════════════════════════════════
+   4. Fade-in for content after load
+   ════════════════════════════════════════════════════════ */
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.matches-grid.is-loaded .match,
+.matches-grid.is-loaded .date-group,
+#bracketGrid.is-loaded .bracket__round,
+#teamsGrid.is-loaded .team-card,
+#groupsGrid.is-loaded .group-card,
+#stadiumsGrid.is-loaded .stadium-card,
+#scorersGrid.is-loaded table {
+  animation: fadeIn .35s ease forwards;
+  animation-delay: calc(var(--i,0) * 40ms);
+}
+#bracketGrid.is-loaded .bracket__round:nth-child(1){--i:1}
+#bracketGrid.is-loaded .bracket__round:nth-child(2){--i:2}
+#bracketGrid.is-loaded .bracket__round:nth-child(3){--i:3}
+#bracketGrid.is-loaded .bracket__round:nth-child(4){--i:4}
+#bracketGrid.is-loaded .bracket__round:nth-child(5){--i:5}
+#bracketGrid.is-loaded .bracket__round:nth-child(6){--i:6}
+
+/* ════════════════════════════════════════════════════════
+   5. Icon Nav
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 759px) {
+  .nav__link { font-size: .82rem; gap: 2px; }
+}
+.nav__link i { font-style: normal; margin-right: 2px; font-size: .9rem; }
+
+/* ════════════════════════════════════════════════════════
+   6. Horizontal Scroll Match Cards (mobile)
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+  .matches-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+  .matches-grid .match,
+  .matches-grid .date-group { flex: 0 0 85vw; scroll-snap-align: start; }
+  .matches-grid .date-group { flex: 0 0 88vw; }
+  .matches-grid .date-group .match { flex: auto; }
+  .match-stage-grid { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; }
+}
+
+/* ════════════════════════════════════════════════════════
+   7. H2H Bar Chart Visual
+   ════════════════════════════════════════════════════════ */
+.h2h__charts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+.h2h__chart-row { display: flex; align-items: center; gap: 6px; font-size: .72rem; color: var(--text-3); }
+.h2h__chart-row b { min-width: 24px; text-align: right; }
+.h2h__bar { height: 6px; border-radius: 3px; transition: width .4s; min-width: 4px; }
+.h2h__bar--1 { background: var(--accent); }
+.h2h__bar--2 { background: var(--accent-3); }
+
+/* ════════════════════════════════════════════════════════
+   8. Scroll Fade-Up Animations
+   ════════════════════════════════════════════════════════ */
+.section { opacity: 0; transform: translateY(24px); transition: opacity .5s ease, transform .5s ease; }
+.section.is-visible { opacity: 1; transform: translateY(0); }
+.hero { opacity: 1; transform: none; } /* hero always visible */
+
+/* ════════════════════════════════════════════════════════
+   9. Group Card Style (compact)
+   ════════════════════════════════════════════════════════ */
+.group-card { background: var(--surface); border-radius: var(--radius-sm); overflow: hidden; }
+.group-card__head { background: var(--surface-2); padding: 10px 14px; font-weight: 700; font-size: .82rem; display: flex; align-items: center; gap: 6px; }
+.group-card__head b { color: var(--accent); }
+.group-card .table { margin: 0; }
+.group-card .table th { font-size: .65rem; padding: 6px 4px; }
+.group-card .table td { padding: 5px 4px; font-size: .78rem; }
+.team-col img { width: 20px; height: 15px; border-radius: 2px; object-fit: cover; margin-right: 6px; vertical-align: middle; }
+tr.qual { background: rgba(22,210,122,.06); }
+
+/* ════════════════════════════════════════════════════════
+   10. Stadium Cards with Gradient Backgrounds
+   ════════════════════════════════════════════════════════ */
+.stadium-card { background: linear-gradient(135deg, var(--surface) 30%, rgba(9,23,54,.9)); border: 1px solid var(--border); position: relative; overflow: hidden; border-radius: var(--radius-sm); padding: 16px; transition: transform .2s, box-shadow .2s; }
+.stadium-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.stadium-card::before { content: "🏟️"; position: absolute; right: 12px; top: 12px; font-size: 2rem; opacity: .15; }
+.stadium-card__name { font-size: 1rem; font-weight: 700; }
+.stadium-card__city { font-size: .78rem; color: var(--text-3); margin: 4px 0 8px; }
+.stadium-card__meta { display: flex; gap: 16px; font-size: .75rem; }
+.stadium-card__meta b { color: var(--accent); }
+.stadium-card__tag { display: inline-block; margin-top: 8px; font-size: .65rem; color: var(--accent-3); background: rgba(0,210,255,.1); padding: 2px 8px; border-radius: 4px; }
+
+/* ════════════════════════════════════════════════════════
+   11. Live Match Time Progress Bar
+   ════════════════════════════════════════════════════════ */
+.live-timer { margin-top: 6px; display: flex; align-items: center; gap: 6px; font-size: .7rem; color: var(--accent-2); }
+.live-timer__bar { flex: 1; height: 3px; background: var(--bg-3); border-radius: 2px; overflow: hidden; }
+.live-timer__fill { height: 100%; background: var(--accent-2); border-radius: 2px; transition: width .3s; }
+.live-timer__label { min-width: 32px; text-align: right; font-weight: 700; }
+
+/* ════════════════════════════════════════════════════════
+   12. Team Profile Hero Banner
+   ════════════════════════════════════════════════════════ */
+.team-profile { }
+.team-profile__head { display: flex; align-items: center; gap: 16px; padding: 20px; background: linear-gradient(135deg, var(--surface-2), var(--bg)); border-radius: var(--radius); margin-bottom: 16px; }
+.team-profile__flag { width: 72px; height: 54px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+.team-profile__name { font-size: 1.4rem; margin: 0 0 2px; font-weight: 800; }
+
+/* ════════════════════════════════════════════════════════
+   13. Bracket Horizontal Scroll + Smooth
+   ════════════════════════════════════════════════════════ */
+.bracket { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 12px 0; -webkit-overflow-scrolling: touch; cursor: grab; }
+.bracket:active { cursor: grabbing; }
+.bracket::-webkit-scrollbar { height: 4px; }
+.bracket::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.bracket__round { flex: 0 0 190px; scroll-snap-align: start; }
+@media (min-width: 768px) { .bracket__round { flex: 0 0 210px; } }
+@media (min-width: 1024px) { .bracket__round { flex: 0 0 230px; } }

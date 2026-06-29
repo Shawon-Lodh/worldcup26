@@ -84,7 +84,7 @@ function renderMatchCard({ g, status }, idx, sIdx, lang, t) {
   const stageTag = g.type === "group" ? `${t("group_name")} ${g.group}` : stageLabel(g.type, t);
 
   return `
-    <article class="match ${status === "live" ? "is-live" : ""}" data-mid="${esc(g.id)}" tabindex="0" role="button" aria-label="Match ${esc(g.id)}">
+    <article class="match ${status === "live" ? "is-live" : ""}" data-mid="${esc(g.id)}" data-stage="${esc(g.type)}" data-state="${status}" data-hs="${esc(hs)}" data-as="${esc(as)}" tabindex="0" role="button" aria-label="Match ${esc(g.id)}">
       <div class="match__top">
         <span class="match__stage">${esc(stageTag)}</span>
         <span class="match__status" data-state="${status}">${esc(statusL)}</span>
@@ -93,19 +93,32 @@ function renderMatchCard({ g, status }, idx, sIdx, lang, t) {
         <div class="team-row ${homeWin ? "is-winner" : ""}">
           ${flagImg(homeFlag, isTBDHome)}
           <span class="team-row__name">${esc(homeLabel)}</span>
-          <span class="team-row__score ${scoreShown ? "" : "is-pending"}">${scoreShown ? esc(toLocalizedDigits(hs, lang)) : "–"}</span>
+          <span class="team-row__score ${scoreShown ? "" : "is-pending"}" data-tid="hs">${scoreShown ? esc(toLocalizedDigits(hs, lang)) : "–"}</span>
         </div>
         <div class="team-row ${awayWin ? "is-winner" : ""}">
           ${flagImg(awayFlag, isTBDAway)}
           <span class="team-row__name">${esc(awayLabel)}</span>
-          <span class="team-row__score ${scoreShown ? "" : "is-pending"}">${scoreShown ? esc(toLocalizedDigits(as, lang)) : "–"}</span>
+          <span class="team-row__score ${scoreShown ? "" : "is-pending"}" data-tid="as">${scoreShown ? esc(toLocalizedDigits(as, lang)) : "–"}</span>
         </div>
       </div>
       <div class="match__bottom">
         <span class="match__date">${esc(kickoff || g.local_date || "")}</span>
         <span class="match__stadium">${esc(stadiumName)}</span>
-      </div>
+      </div>${status === "live" ? `
+      <div class="live-timer">
+        <span>⚡</span>
+        <div class="live-timer__bar"><div class="live-timer__fill" style="width:${liveProgress(g.time_elapsed)}%"></div></div>
+        <span class="live-timer__label">${esc(g.time_elapsed || "LIVE")}′</span>
+      </div>` : ""}
     </article>`;
+}
+function liveProgress(elapsed) {
+  if (!elapsed) return 10;
+  const e = String(elapsed).toLowerCase();
+  if (e === "ht") return 50;
+  if (e === "ft") return 100;
+  const n = parseInt(e); if (isNaN(n)) return 20;
+  return Math.min(100, Math.max(5, (n / 90) * 100));
 }
 
 export function renderMatches(grid, matches, idx, sIdx, lang, filters) {

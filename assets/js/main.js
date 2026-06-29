@@ -230,6 +230,7 @@ async function loadAll() {
     state.stadiumsIdx = buildStadiumsIdx(stadiums);
     autoSelectFilters();
     paintAll();
+    addLoadedClasses();
     startMatchCountdown();
   } catch (e) {
     console.warn("loadAll failed", e);
@@ -259,6 +260,7 @@ async function pollLive() {
     paintStatsBar();
     paintProgress();
     paintGroupProgress();
+    pulseScoreChanges();
     detectChanges(matches, state.teamsIdx, lang);
   } catch (e) {
     console.warn("poll failed", e);
@@ -675,13 +677,48 @@ function wireSectionTracking() {
   const seen = new WeakSet();
   const io = new IntersectionObserver((entries) => {
     for (const e of entries) {
-      if (e.isIntersecting && !seen.has(e.target)) {
-        seen.add(e.target);
-        track("section_view", { id: e.target.id });
+      if (e.isIntersecting) {
+        e.target.classList.add("is-visible");
+        if (!seen.has(e.target)) {
+          seen.add(e.target);
+          track("section_view", { id: e.target.id });
+        }
       }
     }
-  }, { threshold: 0.25 });
+  }, { threshold: 0.1 });
   sections.forEach(s => io.observe(s));
+}
+
+/* ── Score change pulse ──────────────────────────────── */
+let prevScoreMap = new Map();
+function pulseScoreChanges() {
+  document.querySelectorAll(".match").forEach(card => {
+    const mid = card.dataset.mid;
+    const hs = card.dataset.hs || "0";
+    const as = card.dataset.as || "0";
+    const key = mid + "_" + hs + "_" + as;
+    if (prevScoreMap.get(mid) && prevScoreMap.get(mid) !== key) {
+      card.querySelectorAll(".team-row__score:not(.is-pending)").forEach(el => {
+        el.classList.add("score-pulse");
+        setTimeout(() => el.classList.remove("score-pulse"), 500);
+      });
+    }
+    prevScoreMap.set(mid, key);
+  });
+}
+
+function addLoadedClasses() {
+  ["matchesGrid","bracketGrid","teamsGrid","groupsGrid","stadiumsGrid","scorersGrid"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("is-loaded");
+  });
+  // stagger match cards
+  document.querySelectorAll("#matchesGrid .match:not(.date-group .match)").forEach((m, i) => {
+    m.style.setProperty("--i", (i % 12) + 1);
+  });
+  document.querySelectorAll("#teamsGrid .team-card").forEach((m, i) => {
+    m.style.setProperty("--i", (i % 10) + 1);
+  });
 }
 
 /* ── Boot ─────────────────────────────────────────────── */
