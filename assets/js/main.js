@@ -31,6 +31,7 @@ let state = {
   teamsIdx: new Map(), stadiumsIdx: new Map()
 };
 let filters = { stage: "all", status: "all" };
+let filterManual = false;
 let pollTimer = null;
 
 /* ─────────────────────────────────────────────────────── */
@@ -166,6 +167,7 @@ async function loadAll() {
     state.groups = groups;
     state.teamsIdx = buildTeamsIdx(teams);
     state.stadiumsIdx = buildStadiumsIdx(stadiums);
+    autoSelectFilters();
     paintAll();
   } catch (e) {
     console.warn("loadAll failed", e);
@@ -184,6 +186,7 @@ async function pollLive() {
     ]);
     state.matches = matches;
     state.groups = groups;
+    if (!filterManual) autoSelectFilters();
     paintMatches();
     paintGroups();
     paintLiveBanner();
@@ -203,6 +206,67 @@ function schedulePoll() {
 }
 
 /* ── Filters ──────────────────────────────────────────── */
+function autoSelectFilters() {
+  const stageOrder = ["group", "r32", "r16", "qf", "sf", "third", "final"];
+
+  // Determine current stage: the one with live matches, or the earliest upcoming
+  let currentStage = "group";
+  const anyLive = state.matches.some(m => matchStatus(m) === "live");
+
+  if (anyLive) {
+    // Pick the first stage that has a live match
+    for (const stage of stageOrder) {
+      if (state.matches.some(m => m.type === stage && matchStatus(m) === "live")) {
+        currentStage = stage;
+        break;
+      }
+    }
+  } else {
+    // Pick the stage with the earliest upcoming match
+    let earliest = Infinity;
+    for (const stage of stageOrder) {
+      const upcoming = state.matches.filter(m => m.type === stage && matchStatus(m) === "upcoming");
+      if (upcoming.length === 0) continue;
+      const dates = upcoming.map(m => parseMatchDate(m));
+      const min = Math.min(...dates.filter(d => d > 0));
+      if (min < earliest) { earliest = min; currentStage = stage; }
+    }
+    // Fallback: latest stage that has any finished match
+    if (earliest === Infinity) {
+      for (let i = stageOrder.length - 1; i >= 0; i--) {
+        if (state.matches.some(m => m.type === stageOrder[i])) {
+          currentStage = stageOrder[i];
+          break;
+        }
+      }
+    }
+  }
+
+  // Determine status: live > upcoming > all
+  const anyUpcoming = state.matches.some(m => matchStatus(m) === "upcoming");
+  let currentStatus = "all";
+  if (anyLive) currentStatus = "live";
+  else if (anyUpcoming) currentStatus = "upcoming";
+
+  filters = { stage: currentStage, status: currentStatus };
+  updateFilterChips();
+}
+
+function parseMatchDate(m) {
+  const s = state.stadiumsIdx.get(String(m.stadium_id));
+  return parseMatchDateToInstant(m.local_date, s)?.getTime() || Infinity;
+}
+
+function updateFilterChips() {
+  const root = document.getElementById("matchFilters");
+  root.querySelectorAll("[data-filter-stage]").forEach(b => {
+    b.classList.toggle("is-active", b.dataset.filterStage === filters.stage);
+  });
+  root.querySelectorAll("[data-filter-status]").forEach(b => {
+    b.classList.toggle("is-active", b.dataset.filterStatus === filters.status);
+  });
+}
+
 function wireFilters() {
   const root = document.getElementById("matchFilters");
   root.addEventListener("click", (e) => {
@@ -212,10 +276,8 @@ function wireFilters() {
     if (!key) return;
     const value = btn.dataset.filterStage || btn.dataset.filterStatus;
     filters[key] = value;
-    // toggle active within group
-    root.querySelectorAll(`[data-filter-${key === "stage" ? "stage" : "status"}]`).forEach(b => {
-      b.classList.toggle("is-active", b === btn);
-    });
+    filterManual = true;
+    updateFilterChips();
     track("filter_change", { key, value });
     paintMatches();
   });
