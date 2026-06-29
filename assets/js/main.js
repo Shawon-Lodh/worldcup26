@@ -18,7 +18,7 @@ import {
 import { watchHashSeo, updateSeo } from "./seo.js";
 import { parseMatchDateToInstant } from "./timezone.js";
 import { renderBracket, renderTeamProfile, renderTopScorers, renderH2H, renderTimeline } from "./features.js";
-import { detectChanges, requestPermission, disableNotifications, getNotifyState, resetScores, isNotifySupported } from "./notify.js";
+import { detectChanges, toggleNotifications, getNotifyState, resetScores, isNotifySupported } from "./notify.js";
 
 const LS_LANG = "wc26.lang";
 const LS_THEME = "wc26.theme";
@@ -363,19 +363,19 @@ function wireNotifications() {
     const state = getNotifyState();
     const t = getT(lang);
     if (state === "unsupported") { btn.style.display = "none"; return; }
-    if (state === "enabled") btn.textContent = "🔔";
-    else if (state === "denied") btn.textContent = "🔕";
-    else btn.textContent = "🔔";
+    if (state === "enabled") { btn.textContent = "🔔"; btn.style.opacity = "1"; }
+    else if (state === "denied") { btn.textContent = "🔕"; btn.style.opacity = ".5"; }
+    else { btn.textContent = "🔔"; btn.style.opacity = ".5"; }
     btn.title = state === "enabled" ? t("notif_enabled") : state === "denied" ? t("notif_denied") : t("notif_enable");
   };
   updateBtn();
   btn.addEventListener("click", async () => {
-    if (getNotifyState() === "enabled") {
-      disableNotifications();
-    } else {
-      const ok = await requestPermission();
-      if (!ok && getNotifyState() === "denied") showToast(getT(lang)("notif_denied"));
+    const state = getNotifyState();
+    if (state === "denied") {
+      showToast(getT(lang)("notif_denied") + " — check browser site settings");
+      return;
     }
+    await toggleNotifications();
     updateBtn();
   });
 }

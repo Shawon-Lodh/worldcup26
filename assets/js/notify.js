@@ -6,38 +6,47 @@ import { matchStatus, parseScorers } from "./api.js";
 
 let lastScores = new Map();
 let lastScorers = new Map();
-let permission = "default";
 let enabled = false;
 
 export function isNotifySupported() {
   return "Notification" in window;
 }
 
-export function isNotifyEnabled() {
-  return enabled && permission === "granted";
-}
-
 export function getNotifyState() {
   if (!isNotifySupported()) return "unsupported";
-  if (permission === "denied") return "denied";
-  if (enabled) return "enabled";
+  const perm = Notification.permission;
+  if (perm === "denied") return "denied";
+  if (enabled && perm === "granted") return "enabled";
   return "disabled";
 }
 
-export async function requestPermission() {
+export async function toggleNotifications() {
   if (!isNotifySupported()) return false;
-  const result = await Notification.requestPermission();
-  permission = result;
-  if (result === "granted") enabled = true;
-  return result === "granted";
-}
+  const perm = Notification.permission;
 
-export function disableNotifications() {
-  enabled = false;
+  if (enabled) {
+    enabled = false;
+    return false;
+  }
+
+  if (perm === "granted") {
+    enabled = true;
+    return true;
+  }
+
+  if (perm === "denied") {
+    enabled = false;
+    return false; // user must change in browser settings
+  }
+
+  // perm === "default" — ask for permission
+  const result = await Notification.requestPermission();
+  enabled = result === "granted";
+  return enabled;
 }
 
 export function detectChanges(matches, idx, lang) {
-  if (!enabled || permission !== "granted" || !isNotifySupported()) return;
+  if (!enabled || Notification.permission !== "granted" || !isNotifySupported()) return;
 
   for (const g of matches || []) {
     if (matchStatus(g) !== "live") continue;
@@ -54,7 +63,7 @@ export function detectChanges(matches, idx, lang) {
       const an = awayTeam?.name_en || g.away_team_label || "Away";
 
       let body = `${hn} ${g.home_score}–${g.away_score} ${an}`;
-      const newScorers = getNewScorers(prevScorers, curScorers, g, idx);
+      const newScorers = getNewScorers(prevScorers, curScorers);
       if (newScorers) body += ` · ${newScorers}`;
 
       try {
@@ -73,7 +82,7 @@ export function detectChanges(matches, idx, lang) {
   }
 }
 
-function getNewScorers(prev, cur, g, idx) {
+function getNewScorers(prev, cur) {
   const prevList = (prev || "").split(",").filter(Boolean);
   const curList = (cur || "").split(",").filter(Boolean);
   const newOnes = curList.filter(s => !prevList.includes(s));
