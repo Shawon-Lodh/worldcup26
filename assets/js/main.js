@@ -293,11 +293,6 @@ function closeModal() {
   updateSeo(lang);
 }
 
-function setMatchCanonical(mid) {
-  const el = document.querySelector("link[rel='canonical']");
-  if (el) el.setAttribute("href", `${FINAL_HOST}?match=${mid}`);
-}
-
 function wireModal() {
   const modal = document.getElementById("matchModal");
   const body = document.getElementById("matchModalBody");
