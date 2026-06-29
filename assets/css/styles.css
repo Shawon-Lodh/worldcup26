@@ -539,6 +539,7 @@ html[lang="bn"] .match__stage { text-transform: none; letter-spacing: 0; }
 .sc-top1 td { background: rgba(247,201,72,.1); }
 .sc-top2 td { background: rgba(170,182,212,.07); }
 .sc-top3 td { background: rgba(255,84,112,.07); }
+.ht-badge { font-size: .65rem; color: var(--accent); background: rgba(247,201,72,.15); padding: 1px 5px; border-radius: 4px; margin-left: 4px; vertical-align: middle; white-space: nowrap; }
 
 /* ── H2H ───────────────────────────────────────────────── */
 .h2h {}

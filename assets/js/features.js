@@ -208,6 +208,7 @@ export function renderTopScorers(grid, matches, idx, lang) {
   if (!matches?.length) { grid.innerHTML = `<div class="loading">${esc(t("loading"))}</div>`; return; }
 
   const playerMap = new Map();
+  const matchGoals = new Map(); // playerKey_matchId -> count per match
   for (const m of matches) {
     const home = idx.get(String(m.home_team_id));
     const away = idx.get(String(m.away_team_id));
@@ -217,11 +218,19 @@ export function renderTopScorers(grid, matches, idx, lang) {
     const awayFlag = away ? teamFlag(away) : "";
 
     for (const scorer of parseScorers(m.home_scorers)) {
-      addScorer(playerMap, scorer, homeName, homeFlag);
+      addScorer(playerMap, matchGoals, m.id, scorer, homeName, homeFlag);
     }
     for (const scorer of parseScorers(m.away_scorers)) {
-      addScorer(playerMap, scorer, awayName, awayFlag);
+      addScorer(playerMap, matchGoals, m.id, scorer, awayName, awayFlag);
     }
+  }
+
+  // Count hat-tricks per player
+  for (const [comboKey, count] of matchGoals) {
+    if (count < 3) continue;
+    const lnKey = comboKey.split("_").slice(0, -1).join("_");
+    const p = playerMap.get(lnKey);
+    if (p) p.hattricks = (p.hattricks || 0) + 1;
   }
 
   const players = [...playerMap.values()].sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name));
@@ -247,7 +256,7 @@ export function renderTopScorers(grid, matches, idx, lang) {
       <tbody>${top.map((p, i) => `
         <tr class="${i < 3 ? "sc-top" + (i + 1) : ""}">
           <td class="sc-rank">${i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : toLocalizedDigits(i + 1, lang)}</td>
-          <td><b>${esc(p.name)}</b></td>
+          <td><b>${esc(p.name)}</b>${p.hattricks ? ` <span class="ht-badge" title="Hat-trick">⚡×${p.hattricks}</span>` : ""}</td>
           <td>${p.flag ? `<img src="${esc(p.flag)}" alt="" loading="lazy" style="width:20px;vertical-align:middle;margin-right:4px"/>` : ""}${esc(p.team)}</td>
           <td class="pts"><b>${esc(toLocalizedDigits(p.goals, lang))}</b></td>
         </tr>`).join("")}</tbody>
@@ -266,7 +275,7 @@ function lastName(s) {
   return words[words.length - 1] || "";
 }
 
-function addScorer(playerMap, raw, team, flag) {
+function addScorer(playerMap, matchGoals, matchId, raw, team, flag) {
   const name = raw.replace(/\s+\d+.*$/, "").trim();
   if (!name) return;
   const lnKey = normalizeLast(lastName(name));
@@ -275,10 +284,14 @@ function addScorer(playerMap, raw, team, flag) {
       p.goals++;
       if (name.length > p.name.length) p.name = name;
       if (!p.flag && flag) p.flag = flag;
+      const combo = key + "_" + matchId;
+      matchGoals.set(combo, (matchGoals.get(combo) || 0) + 1);
       return;
     }
   }
   playerMap.set(lnKey, { name, goals: 1, team, flag });
+  const combo = lnKey + "_" + matchId;
+  matchGoals.set(combo, (matchGoals.get(combo) || 0) + 1);
 }
 
 /* ── 4. Head to Head ──────────────────────────────────── */
