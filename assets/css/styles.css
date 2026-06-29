@@ -578,6 +578,7 @@ html[lang="bn"] .match__stage { text-transform: none; letter-spacing: 0; }
 
 /* ── Stats Bar ────────────────────────────────────────── */
 .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.stat--live .stat__num { color: var(--accent); }
 
 /* ── Tournament Progress ──────────────────────────────── */
 .tourney-progress { display: flex; align-items: center; gap: 12px; justify-content: center; }

@@ -183,7 +183,7 @@ function paintScorers() {
 }
 function paintStatsBar() {
   renderStatsBar(
-    document.getElementById("statsBarHost"),
+    document.getElementById("statsList"),
     state.matches, state.teamsIdx, lang
   );
 }

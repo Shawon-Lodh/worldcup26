@@ -388,11 +388,11 @@ export function renderTimeline(host, game, idx, lang) {
 /* ── 6. Quick Stats Bar ───────────────────────────────── */
 export function renderStatsBar(host, matches, idx, lang) {
   const t = getT(lang);
-  if (!matches?.length) { host.innerHTML = ""; return; }
+  if (!matches?.length) return;
 
   let totalGoals = 0, matchCount = 0, biggestWin = 0, cleanSheets = 0;
-  const clean = new Map(); // teamId -> kept clean sheet in this match
-  const scored = new Map(); // teamId -> scored in this match
+  const clean = new Map();
+  const scored = new Map();
 
   for (const m of matches) {
     if (matchStatus(m) !== "finished") continue;
@@ -403,26 +403,30 @@ export function renderStatsBar(host, matches, idx, lang) {
     const diff = Math.abs(hs - as);
     if (diff > biggestWin) biggestWin = diff;
 
-    // Clean sheets
     if (as === 0) { clean.set(m.home_team_id, true); scored.set(m.home_team_id, true); }
     else { clean.set(m.home_team_id, false); scored.set(m.home_team_id, true); }
     if (hs === 0) { if (!clean.has(m.away_team_id) || clean.get(m.away_team_id) !== false) clean.set(m.away_team_id, true); }
     else { clean.set(m.away_team_id, false); scored.set(m.away_team_id, true); }
   }
-  cleanSheets = [...clean.entries()].filter(([kid, v]) => v === true && scored.get(kid)).length;
+  cleanSheets = [...clean.entries()].filter(([kid, v]) => v === true).length;
 
   const avg = matchCount ? (totalGoals / matchCount).toFixed(1) : "0";
 
-  host.innerHTML = `
-    <div class="stats-bar">
-      <div class="stat"><span class="stat__num">${esc(toLocalizedDigits(totalGoals, lang))}</span><span class="stat__lbl">${esc(t("stats_total_goals"))}</span></div>
-      <div class="stat"><span class="stat__num">${esc(toLocalizedDigits(avg, lang))}</span><span class="stat__lbl">${esc(t("stats_avg_goals"))}</span></div>
-      <div class="stat"><span class="stat__num">${esc(toLocalizedDigits(biggestWin, lang))}</span><span class="stat__lbl">${esc(t("stats_biggest_win"))}</span></div>
-      <div class="stat"><span class="stat__num">${esc(toLocalizedDigits(cleanSheets, lang))}</span><span class="stat__lbl">${esc(t("stats_clean_sheets"))}</span></div>
-    </div>`;
+  let el = document.getElementById("statsLive");
+  if (!el) {
+    el = document.createElement("div");
+    el.className = "stats";
+    el.id = "statsLive";
+    el.style.cssText = "margin-top:8px;border-top:1px solid var(--border);padding-top:8px";
+    host.parentNode.insertBefore(el, host.nextSibling);
+  }
+  el.innerHTML = `
+    <div class="stat stat--live"><span class="stat__num">${esc(toLocalizedDigits(totalGoals, lang))}</span><span class="stat__lbl">${esc(t("stats_total_goals"))}</span></div>
+    <div class="stat stat--live"><span class="stat__num">${esc(toLocalizedDigits(avg, lang))}</span><span class="stat__lbl">${esc(t("stats_avg_goals"))}</span></div>
+    <div class="stat stat--live"><span class="stat__num">${esc(toLocalizedDigits(biggestWin, lang))}-0</span><span class="stat__lbl">${esc(t("stats_biggest_win"))}</span></div>
+    <div class="stat stat--live"><span class="stat__num">${esc(toLocalizedDigits(cleanSheets, lang))}</span><span class="stat__lbl">${esc(t("stats_clean_sheets"))}</span></div>`;
 }
 
-/* ── 7. Tournament Progress ───────────────────────────── */
 export function renderTournamentProgress(host, matches, lang) {
   const total = 104;
   const played = (matches || []).filter(m => matchStatus(m) === "finished").length;
