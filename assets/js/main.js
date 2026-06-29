@@ -17,7 +17,7 @@ import {
 } from "./render.js?v=8";
 import { watchHashSeo, updateSeo } from "./seo.js";
 import { parseMatchDateToInstant } from "./timezone.js";
-import { renderBracket, renderTeamProfile, renderTopScorers, renderH2H, renderTimeline } from "./features.js";
+import { renderBracket, renderTeamProfile, renderTopScorers, renderH2H, renderTimeline, renderStatsBar, renderTournamentProgress, renderGroupProgress, getTeamFormDots, renderMatchesByDate, startMatchCountdown } from "./features.js";
 import { detectChanges, toggleNotifications, getNotifyState, resetScores, isNotifySupported } from "./notify.js";
 
 const LS_LANG = "wc26.lang";
@@ -34,6 +34,7 @@ let state = {
 };
 let filters = { stage: "all", status: "all" };
 let filterManual = false;
+let calView = false;
 let pollTimer = null;
 
 /* ─────────────────────────────────────────────────────── */
@@ -131,18 +132,32 @@ function paintAll() {
   paintStadiums();
   paintLiveBanner();
   paintScorers();
+  paintStatsBar();
+  paintProgress();
+  paintGroupProgress();
 }
 
 function paintMatches() {
-  renderMatches(
-    document.getElementById("matchesGrid"),
-    state.matches, state.teamsIdx, state.stadiumsIdx, lang, filters
-  );
+  if (calView) {
+    const all = state.matches;
+    let list = all;
+    if (filters.stage !== "all") list = list.filter(x => x.type === filters.stage);
+    if (filters.status !== "all") list = list.filter(x => matchStatus(x) === filters.status);
+    renderMatchesByDate(
+      document.getElementById("matchesGrid"),
+      list, state.teamsIdx, state.stadiumsIdx, lang, getT(lang)
+    );
+  } else {
+    renderMatches(
+      document.getElementById("matchesGrid"),
+      state.matches, state.teamsIdx, state.stadiumsIdx, lang, filters
+    );
+  }
 }
 function paintBracket() {
   renderBracket(
     document.getElementById("bracketGrid"),
-    state.matches, state.teamsIdx, lang
+    state.matches, state.teamsIdx, lang, state.groups
   );
 }
 function paintTeams() {
@@ -166,6 +181,34 @@ function paintScorers() {
     state.matches, state.teamsIdx, lang
   );
 }
+function paintStatsBar() {
+  renderStatsBar(
+    document.getElementById("statsBarHost"),
+    state.matches, state.teamsIdx, lang
+  );
+}
+function paintProgress() {
+  renderTournamentProgress(
+    document.getElementById("tourneyProgressHost"),
+    state.matches, lang
+  );
+}
+function paintGroupProgress() {
+  renderGroupProgress(
+    document.getElementById("groupProgressHost"),
+    state.groups, state.matches, lang
+  );
+  // Add form dots to group table rows
+  document.querySelectorAll("#groupsGrid tr[data-tid]").forEach(row => {
+    const tid = row.dataset.tid;
+    const dots = getTeamFormDots(tid, state.matches);
+    const teamCol = row.querySelector(".team-col");
+    if (teamCol && dots.length && !teamCol.querySelector(".form-mini")) {
+      teamCol.insertAdjacentHTML("beforeend",
+        `<span class="form-mini">${dots.map(c => `<span class="form-mini-dot ${c.toLowerCase()}">${c}</span>`).join("")}</span>`);
+    }
+  });
+}
 
 /* ── Data fetch with realtime polling ────────────────── */
 async function loadAll() {
@@ -187,6 +230,7 @@ async function loadAll() {
     state.stadiumsIdx = buildStadiumsIdx(stadiums);
     autoSelectFilters();
     paintAll();
+    startMatchCountdown();
   } catch (e) {
     console.warn("loadAll failed", e);
     renderError(document.getElementById("matchesGrid"), lang, loadAll);
@@ -212,6 +256,9 @@ async function pollLive() {
     paintGroups();
     paintLiveBanner();
     paintScorers();
+    paintStatsBar();
+    paintProgress();
+    paintGroupProgress();
     detectChanges(matches, state.teamsIdx, lang);
   } catch (e) {
     console.warn("poll failed", e);
@@ -302,6 +349,17 @@ function wireFilters() {
     filterManual = true;
     updateFilterChips();
     track("filter_change", { key, value });
+    paintMatches();
+  });
+}
+
+function wireCalToggle() {
+  const btn = document.getElementById("calToggleBtn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    calView = !calView;
+    const t = getT(lang);
+    btn.textContent = calView ? t("cal_list") : t("cal_by_date");
     paintMatches();
   });
 }
@@ -630,6 +688,7 @@ function wireSectionTracking() {
 function boot() {
   wireUI();
   wireFilters();
+  wireCalToggle();
   wireTeamSearch();
   wireTeamProfile();
   wireBracket();

@@ -239,7 +239,7 @@ export function renderGroups(grid, groups, idx, lang) {
           </thead>
           <tbody>
             ${teams.map((x, i) => `
-              <tr class="${i < 2 ? "qual" : ""}">
+              <tr class="${i < 2 ? "qual" : ""}" data-tid="${esc(String(x.row.team_id))}">
                 <td class="pos">${esc(toLocalizedDigits(i + 1, lang))}</td>
                 <td class="team-col">${x.flag ? `<img src="${esc(x.flag)}" alt="" loading="lazy"/>` : ""}${esc(x.name)}</td>
                 <td>${esc(toLocalizedDigits(x.row.mp || 0, lang))}</td>

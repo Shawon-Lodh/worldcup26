@@ -575,3 +575,31 @@ html[lang="bn"] .match__stage { text-transform: none; letter-spacing: 0; }
 @media (min-width: 1024px) {
   .bracket__round { flex: 0 0 220px; }
 }
+
+/* ── Stats Bar ────────────────────────────────────────── */
+.stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+
+/* ── Tournament Progress ──────────────────────────────── */
+.tourney-progress { display: flex; align-items: center; gap: 12px; justify-content: center; }
+.tourney-progress__bar { flex: 1; max-width: 300px; height: 6px; background: var(--bg-3); border-radius: 3px; overflow: hidden; }
+.tourney-progress__fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .5s; }
+.tourney-progress__text { font-size: .78rem; color: var(--text-3); white-space: nowrap; }
+
+/* ── Group Progress ───────────────────────────────────── */
+.group-progress { display: flex; align-items: center; gap: 6px; font-size: .72rem; color: var(--text-3); }
+.group-progress > span:first-child { min-width: 55px; font-weight: 600; color: var(--text-2); }
+.group-progress__bar { flex: 1; height: 4px; background: var(--bg-3); border-radius: 2px; overflow: hidden; max-width: 100px; }
+.group-progress__fill { height: 100%; background: var(--accent); border-radius: 2px; }
+.group-progress__num { min-width: 50px; text-align: right; }
+
+/* ── Form dots in group table ─────────────────────────── */
+.form-mini { display: inline-flex; gap: 1px; margin-left: 4px; vertical-align: middle; }
+.form-mini-dot { width: 14px; height: 14px; border-radius: 3px; font-size: .55rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; color: #fff; }
+.form-mini-dot.w { background: var(--green); }
+.form-mini-dot.d { background: var(--text-3); }
+.form-mini-dot.l { background: var(--red); }
+
+/* ── Date Group ───────────────────────────────────────── */
+.date-group { margin-bottom: 20px; }
+.date-group__header { font-size: .85rem; font-weight: 700; color: var(--accent); padding: 8px 0; border-bottom: 1px solid var(--border); margin-bottom: 10px; display: flex; align-items: baseline; gap: 8px; }
+.date-group__header span { font-size: .72rem; color: var(--text-3); font-weight: 400; }

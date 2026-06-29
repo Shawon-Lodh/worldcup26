@@ -118,6 +118,18 @@ export const STRINGS = {
     h2h_form: "Form",
     h2h_stats: "Stats",
     h2h_previous: "Previous Meetings",
+    // Stats bar
+    stats_total_goals: "Total Goals",
+    stats_avg_goals: "Avg Goals/Match",
+    stats_biggest_win: "Biggest Win",
+    stats_clean_sheets: "Clean Sheets",
+    // Progress
+    progress_matches: "matches played",
+    progress_group: "played",
+    // Calendar
+    cal_list: "List",
+    cal_by_date: "By Date",
+    cal_no_matches: "No matches on this date",
     // Match timeline
     timeline_title: "Match Timeline",
     timeline_no_events: "No events recorded yet.",
@@ -215,6 +227,18 @@ export const STRINGS = {
     h2h_form: "ফর্ম",
     h2h_stats: "পরিসংখ্যান",
     h2h_previous: "পূর্ববর্তী ম্যাচ",
+    // Stats bar
+    stats_total_goals: "মোট গোল",
+    stats_avg_goals: "গড় গোল/ম্যাচ",
+    stats_biggest_win: "সবচেয়ে বড় জয়",
+    stats_clean_sheets: "ক্লিন শিট",
+    // Progress
+    progress_matches: "ম্যাচ সম্পন্ন",
+    progress_group: "খেলা হয়েছে",
+    // Calendar
+    cal_list: "তালিকা",
+    cal_by_date: "তারিখ অনুযায়ী",
+    cal_no_matches: "এই তারিখে কোনো ম্যাচ নেই",
     // Match timeline
     timeline_title: "ম্যাচ টাইমলাইন",
     timeline_no_events: "এখনও কোনো ইভেন্ট নেই।",

@@ -166,8 +166,10 @@
           </select>
         </label>
         <button id="menuBtn" class="btn btn--icon menu-btn" aria-label="Menu" aria-expanded="false">☰</button>
+        </div>
+        <div id="statsBarHost" style="margin-top:16px"></div>
+        <div id="tourneyProgressHost" style="margin-top:12px"></div>
       </div>
-    </div>
   </header>
 
   <main id="top">
@@ -228,6 +230,9 @@
             <button class="chip" data-filter-status="upcoming" data-i18n="status_upcoming">Upcoming</button>
             <button class="chip" data-filter-status="finished" data-i18n="status_finished">Finished</button>
           </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+          <button id="calToggleBtn" class="chip" data-i18n="cal_by_date">By Date</button>
         </div>
 
         <div class="matches-grid" id="matchesGrid" aria-live="polite">
@@ -311,10 +316,8 @@
           </noscript>
           <div class="loading" data-i18n="loading">Loading groups…</div>
         </div>
+        <div id="groupProgressHost" style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px"></div>
       </div>
-    </section>
-
-    <!-- ░░ Stadiums ░░ -->
     <section id="stadiums" class="section section--alt">
       <div class="container">
         <div class="section__head">

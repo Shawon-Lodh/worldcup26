@@ -5,7 +5,7 @@
    - Images: cache-first with fallback to flag placeholder.
 */
 
-const VERSION = "wc26-v9";
+const VERSION = "wc26-v10";
 const SHELL = [
   "./",
   "./index.html",
